@@ -1,0 +1,47 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "valib", "valib\lib\valib.vcproj", "{30FCD216-1CAD-48FD-BF4B-337572F7EC9C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcproj", "{1B6ED855-EDAC-4A8E-8786-878FD2110DC8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{30FCD216-1CAD-48FD-BF4B-337572F7EC9C} = {30FCD216-1CAD-48FD-BF4B-337572F7EC9C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "out_mixer", "out_mixer\out_mixer.vcproj", "{61BFFDBF-42D4-403F-B0FD-74C459D45865}"
+	ProjectSection(ProjectDependencies) = postProject
+		{30FCD216-1CAD-48FD-BF4B-337572F7EC9C} = {30FCD216-1CAD-48FD-BF4B-337572F7EC9C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmatrix", "libmatrix\libmatrix.vcproj", "{40FAB27F-6168-49AE-A346-4ECDF80FA3B3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{30FCD216-1CAD-48FD-BF4B-337572F7EC9C} = {30FCD216-1CAD-48FD-BF4B-337572F7EC9C}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{30FCD216-1CAD-48FD-BF4B-337572F7EC9C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{30FCD216-1CAD-48FD-BF4B-337572F7EC9C}.Debug|Win32.Build.0 = Debug|Win32
+		{30FCD216-1CAD-48FD-BF4B-337572F7EC9C}.Release|Win32.ActiveCfg = Release|Win32
+		{30FCD216-1CAD-48FD-BF4B-337572F7EC9C}.Release|Win32.Build.0 = Release|Win32
+		{1B6ED855-EDAC-4A8E-8786-878FD2110DC8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1B6ED855-EDAC-4A8E-8786-878FD2110DC8}.Debug|Win32.Build.0 = Debug|Win32
+		{1B6ED855-EDAC-4A8E-8786-878FD2110DC8}.Release|Win32.ActiveCfg = Release|Win32
+		{1B6ED855-EDAC-4A8E-8786-878FD2110DC8}.Release|Win32.Build.0 = Release|Win32
+		{61BFFDBF-42D4-403F-B0FD-74C459D45865}.Debug|Win32.ActiveCfg = Debug|Win32
+		{61BFFDBF-42D4-403F-B0FD-74C459D45865}.Debug|Win32.Build.0 = Debug|Win32
+		{61BFFDBF-42D4-403F-B0FD-74C459D45865}.Release|Win32.ActiveCfg = Release|Win32
+		{61BFFDBF-42D4-403F-B0FD-74C459D45865}.Release|Win32.Build.0 = Release|Win32
+		{40FAB27F-6168-49AE-A346-4ECDF80FA3B3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{40FAB27F-6168-49AE-A346-4ECDF80FA3B3}.Debug|Win32.Build.0 = Debug|Win32
+		{40FAB27F-6168-49AE-A346-4ECDF80FA3B3}.Release|Win32.ActiveCfg = Release|Win32
+		{40FAB27F-6168-49AE-A346-4ECDF80FA3B3}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
