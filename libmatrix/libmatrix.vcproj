@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="libmatrix"
 	ProjectGUID="{40FAB27F-6168-49AE-A346-4ECDF80FA3B3}"
 	RootNamespace="libmatrix"
@@ -117,7 +117,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="include;include\vlc;include\util;&quot;..\DirectX SDK\Include&quot;;..\valib\valib"
+				AdditionalIncludeDirectories="include;include\vlc;include\util;..\valib\valib"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;HAVE_CONFIG_H;__LIBVLC__;__i386__;__PLUGIN__;MODULE_NAME=aout_matrix_directx;MODULE_NAME_IS_aout_matrix_directx;MODULE_STRING=\&quot;aout_matrix_directx\&quot;"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -210,11 +210,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\config.h"
+				RelativePath=".\config\config.h"
 				>
 			</File>
 			<File
-				RelativePath=".\config\config.h"
+				RelativePath=".\include\config.h"
 				>
 			</File>
 			<File

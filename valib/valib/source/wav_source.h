@@ -38,7 +38,6 @@ public:
 
   /////////////////////////////////////////////////////////
   // Source interface
-
   Speakers get_output() const;
   bool is_empty() const;
   bool get_chunk(Chunk *chunk);

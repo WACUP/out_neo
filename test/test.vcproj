@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="test"
 	ProjectGUID="{1B6ED855-EDAC-4A8E-8786-878FD2110DC8}"
 	RootNamespace="test"
@@ -117,7 +117,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\valib\valib;&quot;..\DirectX SDK\Include&quot;"
+				AdditionalIncludeDirectories="..\valib\valib"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"

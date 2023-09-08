@@ -111,7 +111,7 @@ static inline sample_t i2s(int32_t i)
 
 static inline int32_t s2i(sample_t s)
 {
-  register int32_t i;
+  int32_t i;
   __asm fld [s]
   __asm fistp [i]
   return i;

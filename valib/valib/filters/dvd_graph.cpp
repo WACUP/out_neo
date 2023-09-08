@@ -278,13 +278,19 @@ DVDGraph::set_spdif_allow_32(bool _spdif_allow_32)
 int
 DVDGraph::get_dts_mode() const
 {
+#ifdef USE_SPDIF
   return spdifer_pt.get_dts_mode();
+#else
+  return 0;
+#endif
 }
 void
 DVDGraph::set_dts_mode(int _dts_mode)
 {
+#ifdef USE_SPDIF
   spdifer_pt.set_dts_mode(_dts_mode);
   spdifer_enc.set_dts_mode(_dts_mode);
+#endif
   invalidate_chain();
   rebuild_node(state_detector);
 }
@@ -292,13 +298,19 @@ DVDGraph::set_dts_mode(int _dts_mode)
 int
 DVDGraph::get_dts_conv() const
 {
+#ifdef USE_SPDIF
   return spdifer_pt.get_dts_conv();
+#else
+  return 0;
+#endif
 }
 void
 DVDGraph::set_dts_conv(int _dts_conv)
 {
+#ifdef USE_SPDIF
   spdifer_pt.set_dts_conv(_dts_conv);
   spdifer_enc.set_dts_conv(_dts_conv);
+#endif
   invalidate_chain();
   rebuild_node(state_detector);
 }
@@ -330,6 +342,7 @@ DVDGraph::get_info(char *_buf, size_t _len) const
   spk = get_output();
   pos += sprintf(buf + pos, "Output: %s %s %i\n", spk.format_text(), spk.mode_text(), spk.sample_rate);
 
+#ifdef USE_SPDIF
   if (use_spdif)
   {
     pos += sprintf(buf + pos, "\nUse SPDIF\n");
@@ -395,6 +408,7 @@ DVDGraph::get_info(char *_buf, size_t _len) const
     else
       pos += sprintf(buf + pos, "  Do not query for SPDIF output support\n");
   }
+#endif
 
   if (chain_next(node_start) != node_end)
   {
@@ -411,9 +425,11 @@ DVDGraph::get_info(char *_buf, size_t _len) const
 
       switch (node)
       {
+#ifdef USE_SPDIF
       case state_spdif_pt:
         pos += spdifer_pt.get_info(buf + pos, buf_size - pos);
         break;
+#endif
 
       case state_decode:
         pos += dec.get_info(buf + pos, buf_size - pos);
@@ -425,9 +441,11 @@ DVDGraph::get_info(char *_buf, size_t _len) const
         pos += sprintf(buf + pos, "\n");
         break;
 
+#ifdef USE_SPDIF
       case state_spdif_enc:
         pos += spdifer_enc.get_info(buf + pos, buf_size - pos);
         break;
+#endif
 
       default:
         pos += sprintf(buf + pos, "-\n");
@@ -454,15 +472,19 @@ DVDGraph::reset()
   spdif_status = use_spdif? SPDIF_MODE_NONE: SPDIF_MODE_DISABLED;
   spdif_err = use_spdif? SPDIF_MODE_NONE: SPDIF_MODE_DISABLED;
 
+#ifdef USE_SPDIF
   demux.reset();
   detector.reset();
   despdifer.reset();
   spdifer_pt.reset();
+#endif
   dec.reset();
   proc.reset();
+#ifdef USE_SPDIF
   enc.reset();
   spdifer_enc.reset();
   spdif2pcm.reset();
+#endif
 
   FilterGraph::reset();
 }
@@ -496,6 +518,7 @@ DVDGraph::init_filter(int node, Speakers spk)
 {
   switch (node)
   {
+#ifdef USE_SPDIF
     case state_demux:
       return &demux;
 
@@ -512,6 +535,7 @@ DVDGraph::init_filter(int node, Speakers spk)
 
       spdif_status = SPDIF_MODE_PASSTHROUGH;
       return &spdifer_pt;
+#endif
 
     case state_decode:
       return &dec;
@@ -542,16 +566,20 @@ DVDGraph::init_filter(int node, Speakers spk)
     }
 
     case state_encode:
+#ifdef USE_SPDIF
       if (enc.set_bitrate(spdif_bitrate))
         return &enc;
       else
+#endif
         return 0;
 
+#ifdef USE_SPDIF
     case state_spdif_enc:
       return &spdifer_enc;
 
     case state_spdif2pcm:
       return &spdif2pcm;
+#endif
 
     case state_dejitter:
       return &syncer;
@@ -582,14 +610,18 @@ DVDGraph::get_next(int node, Speakers spk) const
     // input -> state_proc_enc
 
     case node_start:
+#ifdef USE_SPDIF
       if (demux.query_input(spk)) 
         return state_demux;
+#endif
 
       if (use_detector && spk.format == FORMAT_PCM16 && spk.mask == MODE_STEREO)
         return state_detector;
 
+#ifdef USE_SPDIF
       if (despdifer.query_input(spk))
         return state_despdif;
+#endif
 
       spdif_err = check_spdif_passthrough(spk);
       if (spdif_err == SPDIF_MODE_PASSTHROUGH)
@@ -617,8 +649,10 @@ DVDGraph::get_next(int node, Speakers spk) const
     // state_detector -> state_proc_enc
 
     case state_detector:
+#ifdef USE_SPDIF
       if (despdifer.query_input(spk))
         return state_despdif;
+#endif
 
       spdif_err = check_spdif_passthrough(spk);
       if (spdif_err == SPDIF_MODE_PASSTHROUGH)
@@ -811,7 +845,9 @@ DVDGraph::check_spdif_encode(Speakers _spk) const
       return SPDIF_ERR_SAMPLE_RATE;
 
   // check encoder
+#ifdef USE_SPDIF
   if (!enc.query_input(enc_spk))
+#endif
     return SPDIF_ERR_ENCODER;
 
   // check sink

@@ -1,11 +1,14 @@
 #include <windows.h>
 #include <commctrl.h>
 #include <stdio.h>
-
+#include <loader/loader/paths.h>
+#include <loader/loader/utils.h>
+#include <api/memmgr/api_memmgr.h>
+#include <nu/autowide.h>
 #include "config.h"
 
-extern HINSTANCE g_hMasterInstance;
 extern Out_Module * g_pModSlave;
+extern outMixer* g_pMixer;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constants
@@ -68,17 +71,17 @@ inline void cr2crlf(char *_buf, int _size)
   }
 }
 
-const char *spklist[] = 
+const TCHAR *spklist[] = 
 {
-	"AS IS (no change)",
-	"1/0 - mono",
-	"2/0 - stereo",
-	"3/0 - 3 front",
-	"2/2 - quadro",
-	"3/1+SW 4.1 surround",
-	"3/2+SW 5.1 channels",
-	"Dolby Surround/ProLogic",
-	"Dolby ProLogic II"
+	TEXT("AS IS (no change)"),
+	TEXT("1/0 - mono"),
+	TEXT("2/0 - stereo"),
+	TEXT("3/0 - 3 front"),
+	TEXT("2/2 - quadro"),
+	TEXT("3/1+SW 4.1 surround"),
+	TEXT("3/2+SW 5.1 channels"),
+	TEXT("Dolby Surround/ProLogic"),
+	TEXT("Dolby ProLogic II")
 };
 
 inline int mode_index(Speakers spk)
@@ -88,6 +91,7 @@ inline int mode_index(Speakers spk)
 		case RELATION_DOLBY:   return 7;
 		case RELATION_DOLBY2:  return 8;
 		default:
+		{
 			switch (spk.mask)
 			{
 				case 0:            return 0;
@@ -99,14 +103,15 @@ inline int mode_index(Speakers spk)
 				case MODE_3_2 | CH_MASK_LFE: return 6;
 			}
 	}
+	}
 	return 0;
 }
 
-const char *fmtlist[] = 
+const TCHAR *fmtlist[] = 
 {
-	"PCM 16bit",
-	"PCM 24bit",
-	"PCM 32bit"
+	TEXT("16-bit"),
+	TEXT("24-bit"),
+	TEXT("32-bit")
 };
 
 inline int format_index(Speakers spk)
@@ -120,18 +125,18 @@ inline int format_index(Speakers spk)
 	return 0;
 }
 
-const char *ratelist[] =
+const TCHAR *ratelist[] =
 {
-	"AS IS (no change)",
-	"8 kHz",
-	"11.025 kHz",
-	"22.050 kHz",
-	"24 kHz",
-	"32 kHz",
-	"44.1 kHz",
-	"48 kHz",
-	"96 kHz",
-	"192 kHz"
+	TEXT("AS IS (no change)"),
+	TEXT("8 kHz"),
+	TEXT("11.025 kHz"),
+	TEXT("22.050 kHz"),
+	TEXT("24 kHz"),
+	TEXT("32 kHz"),
+	TEXT("44.1 kHz"),
+	TEXT("48 kHz"),
+	TEXT("96 kHz"),
+	TEXT("192 kHz")
 };
 
 inline int rate_index(int rate)
@@ -152,15 +157,14 @@ inline int rate_index(int rate)
 	return 0;
 }
 
-
-const char *units_list[] =
+const TCHAR *units_list[] =
 {
-	"Samples",
-	"Millisecs",
-	"Meters",
-	"Centimeters",
-	"Feet",
-	"Inches"
+	TEXT("Samples"),
+	TEXT("Millisecs"),
+	TEXT("Meters"),
+	TEXT("Centimeters"),
+	TEXT("Feet"),
+	TEXT("Inches")
 };
 
 inline int unit_index(int units)
@@ -200,65 +204,63 @@ const int bitrate_list[] =
 inline int bitrate_index(int bitrate)
 {
 	bitrate /= 1000;
-	for (int i = 0; i < array_size(bitrate_list); i++)
+	for (int i = 0; i < ARRAYSIZE(bitrate_list); i++)
 		if (bitrate_list[i] >= bitrate)
 			return i;
-	return array_size(bitrate_list) - 1;
+	return ARRAYSIZE(bitrate_list) - 1;
 }
 
 inline int bitrate_from_index(int index)
 {
-	if (index >= 0 && index < array_size(bitrate_list))
+	if (index >= 0 && index < ARRAYSIZE(bitrate_list))
 		return bitrate_list[index] * 1000;
 	else
 		return 448000; // default bitrate
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // Initialization / Deinitialization
 ///////////////////////////////////////////////////////////////////////////////
+ConfigDlg *ConfigDlg::create_main(outMixer *_outMixer)
+{ return new ConfigDlg(IDD_MAIN, _outMixer); }
 
-ConfigDlg *ConfigDlg::create_main(HMODULE hmodule, outMixer *_outMixer)
-{ return new ConfigDlg(hmodule, MAKEINTRESOURCE(IDD_MAIN), _outMixer); }
+ConfigDlg *ConfigDlg::create_mixer(outMixer *_outMixer)
+{ return new ConfigDlg(IDD_MIXER, _outMixer); }
 
-ConfigDlg *ConfigDlg::create_mixer(HMODULE hmodule, outMixer *_outMixer)
-{ return new ConfigDlg(hmodule, MAKEINTRESOURCE(IDD_MIXER), _outMixer); }
+ConfigDlg *ConfigDlg::create_gains(outMixer *_outMixer)
+{ return new ConfigDlg(IDD_GAINS, _outMixer); }
 
-ConfigDlg *ConfigDlg::create_gains(HMODULE hmodule, outMixer *_outMixer)
-{ return new ConfigDlg(hmodule, MAKEINTRESOURCE(IDD_GAINS), _outMixer); }
+#ifdef USE_SPDIF
+ConfigDlg *ConfigDlg::create_spdif(outMixer *_outMixer)
+{ return new ConfigDlg(IDD_SPDIF, _outMixer); }
+#endif
 
-ConfigDlg *ConfigDlg::create_spdif(HMODULE hmodule, outMixer *_outMixer)
-{ return new ConfigDlg(hmodule, MAKEINTRESOURCE(IDD_SPDIF), _outMixer); }
+/*ConfigDlg *ConfigDlg::create_about(outMixer *_outMixer)
+{ return new ConfigDlg(IDD_ABOUT, _outMixer); }*/
 
-ConfigDlg *ConfigDlg::create_about(HMODULE hmodule, outMixer *_outMixer)
-{ return new ConfigDlg(hmodule, MAKEINTRESOURCE(IDD_ABOUT), _outMixer); }
-
-ConfigDlg::ConfigDlg(HMODULE _hmodule, LPCSTR _dlg_res, outMixer *_outMixer) 
-:TabSheet(_hmodule, _dlg_res)
+ConfigDlg::ConfigDlg(UINT _dlg_res, outMixer *_outMixer) 
+:TabSheet(_dlg_res)
 {
 	m_outMixer = _outMixer;
 	m_dvd_graph = m_outMixer->get_DvdGraph();
 	m_proc = &m_dvd_graph->proc;
-
-	InitCommonControls();
 }
 
 void ConfigDlg::switch_on()
 {
 	/////////////////////////////////////
 	// Refresh dialog state
-
 	m_refresh = true;
 	init_controls();
 	update();
-	set_cpu_usage();
 
 	/////////////////////////////////////
 	// Start timers
-
+#ifdef LEGACY_CODE
 	SetTimer(hwnd, 1, refresh_time, 0);	// for all dynamic controls
-	SetTimer(hwnd, 2, 1000, 0);	// for CPU usage (should be averaged)
+#else
+	SetTimer(hwnd, 1, m_outMixer->get_RefreshTime(), 0);	// for all dynamic controls
+#endif
 
 	TabSheet::switch_on();
 }
@@ -266,7 +268,6 @@ void ConfigDlg::switch_on()
 void ConfigDlg::switch_off()
 {
 	KillTimer(hwnd, 1);
-	KillTimer(hwnd, 2);
 	TabSheet::switch_off();
 }
 
@@ -279,15 +280,18 @@ BOOL ConfigDlg::message(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 		case WM_COMMAND:
+		{
 			command(LOWORD(wParam), HIWORD(wParam));
 			return 1;
-
+		}
 		case WM_HSCROLL:
 		case WM_VSCROLL:
+		{
 			command(GetDlgCtrlID((HWND)lParam), LOWORD(wParam));
 			return 1;
-
+		}
 		case WM_TIMER:
+		{
 			if (IsWindowVisible(hwnd))
 				if (m_visible)
 				{
@@ -299,10 +303,6 @@ BOOL ConfigDlg::message(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 								update_static_controls();
 							update_dynamic_controls();
 							break;
-
-						case 2:
-							set_cpu_usage();
-							break;
 					}
 				}
 				else
@@ -310,34 +310,19 @@ BOOL ConfigDlg::message(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					m_refresh = true;
 					m_visible = true;
 					update();
-					set_cpu_usage();
 				}
 			else
 				m_visible = false;
 			return 1;
 	}
+	}
 
 	return TabSheet::message(hwnd, uMsg, wParam, lParam);
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // Controls initalization/update
 ///////////////////////////////////////////////////////////////////////////////
-
-void ConfigDlg::set_cpu_usage()
-{
-	/////////////////////////////////////
-	// CPU usage
-
-	double cpu_usage;
-	cpu_usage = m_outMixer->get_CpuUsage();
-	dlg_printf(hwnd, IDC_CPU_LABEL, "%i%%", int(cpu_usage*100));
-	if (invert_levels)
-		SendDlgItemMessage(hwnd, IDC_CPU, PBM_SETPOS, 100 - int(cpu_usage * 100),  0);
-	else
-		SendDlgItemMessage(hwnd, IDC_CPU, PBM_SETPOS, int(cpu_usage * 100),  0);
-}
 
 void ConfigDlg::update()
 {
@@ -346,48 +331,74 @@ void ConfigDlg::update()
 	update_static_controls();
 }
 
+Out_Module* get_out_plugin(LPCWSTR file_name)
+{
+	WINAMPGETOUTMODULE winampGetOutModule = (WINAMPGETOUTMODULE)GetProcAddress(
+											GetDllHandle(GetPaths()->winamp_plugin_dir,
+											   file_name, NULL), "winampGetOutModule");
+	return (winampGetOutModule ? winampGetOutModule() : NULL);
+}
+
 void ConfigDlg::init_plugin_list()
 {
-	char szFullpath[MAX_PATH] = "";
-	int iFullLathLen = 0;
-	char *walk;
-	char szMasterName[MAX_PATH] = "";
-	char szSlaveName[MAX_PATH] = "";
+	WCHAR szFullpath[MAX_PATH] = { 0 };
+	WCHAR szMasterName[MAX_PATH] = { 0 };
+	WCHAR *pszMasterName;
+	WCHAR szSlaveName[MAX_PATH] = { 0 };
+	WCHAR *pszSlaveName = 0;
 
 	// get master plugin file name
-	GetModuleFileName( g_hMasterInstance, szFullpath, MAX_PATH - 6 - 1 );
-	iFullLathLen = strlen( szFullpath );
-	walk = szFullpath + iFullLathLen - 1; // Last char
-	while( ( walk > szFullpath ) && ( *walk != '\\' ) ) walk--;
-	walk++;
-	memcpy(szMasterName, walk, szFullpath + iFullLathLen - walk + 1);
+	GetModuleFileName(g_OutModMaster.hDllInstance, szMasterName, MAX_PATH - 6 - 1);
+	pszMasterName = (LPWSTR)FindPathFileName(szMasterName);
 
 	// get slave plugin file name
-	GetModuleFileName( g_pModSlave->hDllInstance, szFullpath, MAX_PATH - 6 - 1 );
-	iFullLathLen = strlen( szFullpath );
-	walk = szFullpath + iFullLathLen - 1; // Last char
-	while( ( walk > szFullpath ) && ( *walk != '\\' ) ) walk--;
-	walk++;
-	memcpy(szSlaveName, walk, szFullpath + iFullLathLen - walk + 1);
-
-	memcpy(walk, "out_*.dll", 10);
+	if (g_pMixer)
+	{
+		pszSlaveName = (LPWSTR)g_pMixer->get_OutputPlugin();
+	}
+	else
+	{
+	if (g_pModSlave && g_pModSlave->hDllInstance)
+	{
+		GetModuleFileName(g_pModSlave->hDllInstance, szSlaveName, MAX_PATH - 6 - 1);
+		pszSlaveName = (LPWSTR)FindPathFileName(szSlaveName);
+	}
+	}
 
 	BOOL re = TRUE;
-	WIN32_FIND_DATA File;
-	HANDLE hSearch = FindFirstFile(szFullpath, &File);
+	WIN32_FIND_DATA File = { 0 };
+	HANDLE hSearch = SearchFolder(szFullpath, GetPaths()->winamp_plugin_dir, L"out_*.dll", &File);
 	SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_RESETCONTENT, 0, 0);
 	if (hSearch != INVALID_HANDLE_VALUE)
 	{
 		int index = -1;
 		while (re)
 		{
-			if (strcmp(szMasterName, File.cFileName) != 0)
+			if (IsValidPluginFile(File.cFileName))
 			{
-				SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_ADDSTRING, 0, (LONG) File.cFileName);
+				if (pszMasterName && (wcscmp(pszMasterName, File.cFileName) != 0) &&
+					!IsDllBlocked(File.cFileName) && CanLoadPlugin(File.cFileName, TRUE))
+				{
+					Out_Module* out_plugin = get_out_plugin(File.cFileName);
+
+					LPCWSTR desc = (out_plugin ? (((out_plugin->version == OUT_VER_U) ?
+									(wchar_t *)out_plugin->description :
+									AutoWideDup(out_plugin->description))) : NULL);
+
+					SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_SETITEMDATA,
+					SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_ADDSTRING, 0, (LPARAM)(desc &&
+													*desc ? desc : File.cFileName)), (LPARAM)
+												WASABI_API_MEMMGR->sysDupStr(File.cFileName));
 				++index;
+
+					if (desc && (out_plugin->version == OUT_VER))
+					{
+						WASABI_API_MEMMGR->sysFree((void*)desc);
+					}
 			}
-			if (strcmp(szSlaveName, File.cFileName) == 0)
+				if (pszSlaveName && (wcscmp(pszSlaveName, File.cFileName) == 0))
 				SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_SETCURSEL, index, 0);
+			}
 			re = FindNextFile(hSearch, &File);
 		}
 		FindClose(hSearch);
@@ -399,74 +410,64 @@ void ConfigDlg::init_controls()
 	int ch;
 
 	/////////////////////////////////////
+#if 0
 	// Links
-
 	lnk_home.link(hwnd, IDC_LNK_HOME);
 	lnk_forum.link(hwnd, IDC_LNK_FORUM);
+#endif
 
 	/////////////////////////////////////
 	// Build and environment info
+	TCHAR info[1024] = {0};
 
-	char info[1024];
-
-	strncpy(info, valib_build_info(), sizeof(info));
-	info[sizeof(info)-1] = 0;
-	cr2crlf(info, sizeof(info));
+	/*_tcsncpy(info, valib_build_info(), ARRAYSIZE(info));
+	info[ARRAYSIZE(info)-1] = 0;
+	cr2crlf(info, ARRAYSIZE(info));
 	SetDlgItemText(hwnd, IDC_EDT_ENV, info);
 
-	strncpy(info, valib_credits(), sizeof(info));
-	info[sizeof(info)-1] = 0;
-	cr2crlf(info, sizeof(info));
-	SetDlgItemText(hwnd, IDC_EDT_CREDITS, info);
+	_tcsncpy(info, valib_credits(), ARRAYSIZE(info));
+	info[ARRAYSIZE(info)-1] = 0;
+	cr2crlf(info, ARRAYSIZE(info));
+	SetDlgItemText(hwnd, IDC_EDT_CREDITS, info);*/
 
 	/////////////////////////////////////
 	// Version
-
-	char ver1[255];
-	char ver2[255];
-	GetDlgItemText(parent, IDC_VER, ver1, array_size(ver1));
-	sprintf(ver2, ver1, PLUGIN_NAME);
-	SetDlgItemText(parent, IDC_VER, ver2);
+	/*TCHAR ver1[255] = {0};
+	TCHAR ver2[255] = {0};
+	GetDlgItemText(parent, IDC_VER, ver1, ARRAYSIZE(ver1));
+	_tprintf(ver2, ver1, PLUGIN_NAME);
+	SetDlgItemText(parent, IDC_VER, ver2);*/
 
 	/////////////////////////////////////
 	// Speakers
-
 	SendDlgItemMessage(hwnd, IDC_CMB_SPK, CB_RESETCONTENT, 0, 0);
-	for (int i = 0; i < array_size(spklist); i++)
-		SendDlgItemMessage(hwnd, IDC_CMB_SPK, CB_ADDSTRING, 0, (LONG) spklist[i]);
+	for (int i = 0; i < ARRAYSIZE(spklist); i++)
+		SendDlgItemMessage(hwnd, IDC_CMB_SPK, CB_ADDSTRING, 0, (LPARAM) spklist[i]);
 
 	/////////////////////////////////////
 	// Formats
-
 	SendDlgItemMessage(hwnd, IDC_CMB_FORMAT, CB_RESETCONTENT, 0, 0);
-	for (int i = 0; i < array_size(fmtlist); i++)
-		SendDlgItemMessage(hwnd, IDC_CMB_FORMAT, CB_ADDSTRING, 0, (LONG) fmtlist[i]);
+	for (int i = 0; i < ARRAYSIZE(fmtlist); i++)
+		SendDlgItemMessage(hwnd, IDC_CMB_FORMAT, CB_ADDSTRING, 0, (LPARAM) fmtlist[i]);
 
 	/////////////////////////////////////
 	// Sample Rates
-
 	SendDlgItemMessage(hwnd, IDC_CMB_RATE, CB_RESETCONTENT, 0, 0);
-	for (int i = 0; i < array_size(ratelist); i++)
-		SendDlgItemMessage(hwnd, IDC_CMB_RATE, CB_ADDSTRING, 0, (LONG) ratelist[i]);
+	for (int i = 0; i < ARRAYSIZE(ratelist); i++)
+		SendDlgItemMessage(hwnd, IDC_CMB_RATE, CB_ADDSTRING, 0, (LPARAM) ratelist[i]);
 
 	/////////////////////////////////////
 	// Output plugin
-
 	init_plugin_list();
 
 	/////////////////////////////////////
 	// Interface
-
+#ifdef LEGACY_CODE
 	edt_refresh_time.link(hwnd, IDC_EDT_REFRESH_TIME);
-
-	/////////////////////////////////////
-	// CPU usage
-
-	SendDlgItemMessage(hwnd, IDC_CPU, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
+#endif
 
 	/////////////////////////////////////
 	// I/O Levels
-
 	for (ch = 0; ch < NCHANNELS; ch++)
 	{
 		SendDlgItemMessage(hwnd, idc_level_in[ch],  PBM_SETBARCOLOR, 0, RGB(0, 128, 0));
@@ -477,13 +478,11 @@ void ConfigDlg::init_controls()
 
 	/////////////////////////////////////
 	// AGC
-
 	edt_attack.link(hwnd, IDC_EDT_ATTACK);
 	edt_release.link(hwnd, IDC_EDT_RELEASE);
 
 	/////////////////////////////////////
 	// DRC
-
 	SendDlgItemMessage(hwnd, IDC_SLI_DRC_POWER, TBM_SETRANGE, TRUE, MAKELONG(min_gain_level, max_gain_level) * ticks);
 	SendDlgItemMessage(hwnd, IDC_SLI_DRC_POWER, TBM_SETTIC, 0, 0);
 	SendDlgItemMessage(hwnd, IDC_SLI_DRC_LEVEL, TBM_SETRANGE, TRUE, MAKELONG(min_gain_level, max_gain_level) * ticks);
@@ -493,7 +492,6 @@ void ConfigDlg::init_controls()
 
 	/////////////////////////////////////
 	// Gains
-
 	SendDlgItemMessage(hwnd, IDC_SLI_MASTER, TBM_SETRANGE, TRUE, MAKELONG(min_gain_level, max_gain_level) * ticks);
 	SendDlgItemMessage(hwnd, IDC_SLI_MASTER, TBM_SETTIC, 0, 0);
 	SendDlgItemMessage(hwnd, IDC_SLI_GAIN,   TBM_SETRANGE, TRUE, MAKELONG(min_gain_level, max_gain_level) * ticks);
@@ -534,8 +532,8 @@ void ConfigDlg::init_controls()
 		edt_delay[ch].link(hwnd, idc_edt_delay[ch]);
 
 	SendDlgItemMessage(hwnd, IDC_CMB_UNITS, CB_RESETCONTENT, 0, 0);
-	for (int i = 0; i < sizeof(units_list) / sizeof(units_list[0]); i++)
-		SendDlgItemMessage(hwnd, IDC_CMB_UNITS, CB_ADDSTRING, 0, (LONG) units_list[i]);
+	for (int i = 0; i < ARRAYSIZE(units_list); i++)
+		SendDlgItemMessage(hwnd, IDC_CMB_UNITS, CB_ADDSTRING, 0, (LPARAM) units_list[i]);
 
 	/////////////////////////////////////
 	// Bass redirection
@@ -551,12 +549,12 @@ void ConfigDlg::init_controls()
 
 	/////////////////////////////////////
 	// SPDIF
-
 	SendDlgItemMessage(hwnd, IDC_CMB_SPDIF_BITRATE, CB_RESETCONTENT, 0, 0);
-	for (int i = 0; i < array_size(bitrate_list); i++)
+	for (int i = 0; i < ARRAYSIZE(bitrate_list); i++)
 	{
-		int index = SendDlgItemMessage(hwnd, IDC_CMB_SPDIF_BITRATE, CB_ADDSTRING, 0, (LONG)itoa(bitrate_list[i], info, 10));
-		SendDlgItemMessage(hwnd, IDC_CMB_SPDIF_BITRATE, CB_SETITEMDATA, index, bitrate_list[i]);
+		SendDlgItemMessage(hwnd, IDC_CMB_SPDIF_BITRATE, CB_SETITEMDATA,
+		SendDlgItemMessage(hwnd, IDC_CMB_SPDIF_BITRATE, CB_ADDSTRING, 0,
+			(LPARAM)_itot(bitrate_list[i], info, 10)), bitrate_list[i]);
 	}
 }
 
@@ -564,16 +562,30 @@ void ConfigDlg::reload_state()
 {
 	m_outMixer->get_Input(&in_spk);
 	m_outMixer->get_Output(&out_spk);
+#ifdef USE_SPDIF
 	use_spdif = m_outMixer->get_UseSpdif();
+#endif
 
 	// Interface
 	invert_levels = m_outMixer->get_InvertLevels();
+#ifdef LEGACY_CODE
 	refresh_time = m_outMixer->get_RefreshTime();
+#endif
 
 	// Input/output levels
-	vtime_t time = m_outMixer->GetOutputTime() / 1000.0;
+	const vtime_t time = (m_outMixer->GetOutputTime() / 1000.0);
+	if (time > 0)
+	{
 	m_proc->get_input_levels(time, input_levels);
 	m_proc->get_output_levels(time, output_levels);
+	}
+	else
+	{
+		// if there's output time then we're very likely
+		// to be in a stopped state so clear things here
+		memset(input_levels, 0, sizeof(input_levels));
+		memset(output_levels, 0, sizeof(output_levels));
+	}
 
 	// AGC options
 	auto_gain = m_proc->get_auto_gain();
@@ -617,6 +629,7 @@ void ConfigDlg::reload_state()
 	// Matrix
 	m_proc->get_matrix(matrix);
 
+#ifdef USE_SPDIF
 	// SPDIF
 	spdif_dts_mode = m_dvd_graph->get_dts_mode();
 	spdif_dts_conv = m_dvd_graph->get_dts_conv();
@@ -631,6 +644,7 @@ void ConfigDlg::reload_state()
 	spdif_allow_32 = m_dvd_graph->get_spdif_allow_32();
 	spdif_query_sink = m_dvd_graph->get_query_sink();
 	spdif_close_at_end = m_outMixer->get_SpdifCloseAtEnd();
+#endif
 }
 
 void ConfigDlg::update_static_controls()
@@ -639,41 +653,40 @@ void ConfigDlg::update_static_controls()
 
 	/////////////////////////////////////
 	// Speakers
-
 	SendDlgItemMessage(hwnd, IDC_CMB_SPK,    CB_SETCURSEL, mode_index(out_spk), 0);
 	SendDlgItemMessage(hwnd, IDC_CMB_FORMAT, CB_SETCURSEL, format_index(out_spk), 0);
 	SendDlgItemMessage(hwnd, IDC_CMB_RATE,	 CB_SETCURSEL, rate_index(m_outMixer->get_SampleRate()), 0);
+#ifdef USE_SPDIF
 	CheckDlgButton(hwnd, IDC_CHK_USE_SPDIF, use_spdif ? BST_CHECKED : BST_UNCHECKED);
+#endif
 
 	/////////////////////////////////////
 	// Interface
-
 	CheckDlgButton(hwnd, IDC_CHK_INVERT_LEVELS, invert_levels ? BST_CHECKED : BST_UNCHECKED);
+#ifdef LEGACY_CODE
 	edt_refresh_time.update_value(refresh_time);
+#endif
 
 	/////////////////////////////////////
 	// Auto gain control
-
 	SendDlgItemMessage(hwnd, IDC_SLI_MASTER, TBM_SETPOS, TRUE, long(-value2db(master) * ticks));
 	edt_master.update_value(value2db(master));
 
 	SendDlgItemMessage(hwnd, IDC_CHK_AUTO_GAIN, BM_SETCHECK, auto_gain ? BST_CHECKED : BST_UNCHECKED, 1);
 	SendDlgItemMessage(hwnd, IDC_CHK_NORMALIZE, BM_SETCHECK, normalize ? BST_CHECKED : BST_UNCHECKED, 1);
-	EnableWindow(GetDlgItem(hwnd, IDC_CHK_NORMALIZE), auto_gain);
+	EnableControl(hwnd, IDC_CHK_NORMALIZE, auto_gain);
 
 	edt_attack.update_value(attack);
 	edt_release.update_value(release);
 
 	/////////////////////////////////////
 	// DRC
-
 	SendDlgItemMessage(hwnd, IDC_CHK_DRC, BM_SETCHECK, drc ? BST_CHECKED : BST_UNCHECKED, 1);
 	SendDlgItemMessage(hwnd, IDC_SLI_DRC_POWER, TBM_SETPOS, TRUE, long(-drc_power * ticks));
 	edt_drc_power.update_value(drc_power);
 
 	/////////////////////////////////////
 	// Gain controls
-
 	SendDlgItemMessage(hwnd, IDC_SLI_VOICE, TBM_SETPOS, TRUE, long(-value2db(clev)   * ticks));
 	SendDlgItemMessage(hwnd, IDC_SLI_SUR,   TBM_SETPOS, TRUE, long(-value2db(slev)   * ticks));
 	SendDlgItemMessage(hwnd, IDC_SLI_LFE,   TBM_SETPOS, TRUE, long(-value2db(lfelev) * ticks));
@@ -684,7 +697,6 @@ void ConfigDlg::update_static_controls()
 
 	/////////////////////////////////////
 	// I/O Gains
-
 	for (ch = 0; ch < NCHANNELS; ch++)
 	{
 		SendDlgItemMessage(hwnd, idc_slider_in[ch],  TBM_SETPOS, TRUE, long(-value2db(input_gains[ch])  * ticks));
@@ -695,7 +707,6 @@ void ConfigDlg::update_static_controls()
 
 	/////////////////////////////////////
 	// Delay
-
 	for (ch = 0; ch < NCHANNELS; ch++)
 	{
 		edt_delay[ch].update_value(delays[ch]);
@@ -703,48 +714,42 @@ void ConfigDlg::update_static_controls()
 	}
 	SendDlgItemMessage(hwnd, IDC_CHK_DELAYS, BM_SETCHECK, delay? BST_CHECKED: BST_UNCHECKED, 1);
 	SendDlgItemMessage(hwnd, IDC_CMB_UNITS, CB_SETCURSEL, unit_index(delay_units), 0);
-	EnableWindow(GetDlgItem(hwnd, IDC_CMB_UNITS), delay);
+	EnableControl(hwnd, IDC_CMB_UNITS, delay);
 
 	/////////////////////////////////////
 	// Matrix Flags
-
 	SendDlgItemMessage(hwnd, IDC_CHK_AUTO_MATRIX,   BM_SETCHECK, auto_matrix?      BST_CHECKED: BST_UNCHECKED, 1);
 	SendDlgItemMessage(hwnd, IDC_CHK_EXPAND_STEREO, BM_SETCHECK, expand_stereo?    BST_CHECKED: BST_UNCHECKED, 1);
 	SendDlgItemMessage(hwnd, IDC_CHK_VOICE_CONTROL, BM_SETCHECK, voice_control?    BST_CHECKED: BST_UNCHECKED, 1);
 	SendDlgItemMessage(hwnd, IDC_CHK_NORM_MATRIX,   BM_SETCHECK, normalize_matrix? BST_CHECKED: BST_UNCHECKED, 1);
-	EnableWindow(GetDlgItem(hwnd, IDC_CHK_EXPAND_STEREO), auto_matrix);
-	EnableWindow(GetDlgItem(hwnd, IDC_CHK_VOICE_CONTROL), auto_matrix);
-	EnableWindow(GetDlgItem(hwnd, IDC_CHK_NORM_MATRIX), auto_matrix);
+	EnableControl(hwnd, IDC_CHK_EXPAND_STEREO, auto_matrix);
+	EnableControl(hwnd, IDC_CHK_VOICE_CONTROL, auto_matrix);
+	EnableControl(hwnd, IDC_CHK_NORM_MATRIX, auto_matrix);
 
 	/////////////////////////////////////
 	// Bass redirection
-
 	SendDlgItemMessage(hwnd, IDC_CHK_BASS_REDIR, BM_SETCHECK, bass_redir? BST_CHECKED: BST_UNCHECKED, 1);
 	edt_bass_freq.update_value(bass_freq);
 
 	/////////////////////////////////////
 	// Matrix
-
 	update_matrix_controls();
 
-
+#ifdef USE_SPDIF
 	/////////////////////////////////////
 	// SPDIF/DTS output mode
-
 	SendDlgItemMessage(hwnd, IDC_RBT_DTS_MODE_AUTO,    BM_SETCHECK, spdif_dts_mode == DTS_MODE_AUTO? BST_CHECKED: BST_UNCHECKED, 1);
 	SendDlgItemMessage(hwnd, IDC_RBT_DTS_MODE_WRAPPED, BM_SETCHECK, spdif_dts_mode == DTS_MODE_WRAPPED? BST_CHECKED: BST_UNCHECKED, 1);
 	SendDlgItemMessage(hwnd, IDC_RBT_DTS_MODE_PADDED,  BM_SETCHECK, spdif_dts_mode == DTS_MODE_PADDED? BST_CHECKED: BST_UNCHECKED, 1);
 
 	/////////////////////////////////////
 	// SPDIF/DTS conversion
-
 	SendDlgItemMessage(hwnd, IDC_RBT_DTS_CONV_NONE,    BM_SETCHECK, spdif_dts_conv == DTS_CONV_NONE? BST_CHECKED: BST_UNCHECKED, 1);
 	SendDlgItemMessage(hwnd, IDC_RBT_DTS_CONV_14BIT,   BM_SETCHECK, spdif_dts_conv == DTS_CONV_14BIT? BST_CHECKED: BST_UNCHECKED, 1);
 	SendDlgItemMessage(hwnd, IDC_RBT_DTS_CONV_16BIT,   BM_SETCHECK, spdif_dts_conv == DTS_CONV_16BIT? BST_CHECKED: BST_UNCHECKED, 1);
 
 	/////////////////////////////////////
 	// SPDIF options
-
 	CheckDlgButton(hwnd, IDC_CHK_USE_DETECTOR, spdif_use_detector? BST_CHECKED: BST_UNCHECKED);
 	CheckDlgButton(hwnd, IDC_CHK_SPDIF_ENCODE, spdif_encode? BST_CHECKED: BST_UNCHECKED);
 	CheckDlgButton(hwnd, IDC_CHK_SPDIF_STEREO_PT, spdif_stereo_pt? BST_CHECKED: BST_UNCHECKED);
@@ -756,49 +761,67 @@ void ConfigDlg::update_static_controls()
 	CheckDlgButton(hwnd, IDC_CHK_SPDIF_ALLOW_44, spdif_allow_44? BST_CHECKED: BST_UNCHECKED);
 	CheckDlgButton(hwnd, IDC_CHK_SPDIF_ALLOW_32, spdif_allow_32? BST_CHECKED: BST_UNCHECKED);
 
-	EnableWindow(GetDlgItem(hwnd, IDC_CHK_SPDIF_STEREO_PT), spdif_encode);
-	EnableWindow(GetDlgItem(hwnd, IDC_CHK_SPDIF_ALLOW_48), spdif_check_sr);
-	EnableWindow(GetDlgItem(hwnd, IDC_CHK_SPDIF_ALLOW_44), spdif_check_sr);
-	EnableWindow(GetDlgItem(hwnd, IDC_CHK_SPDIF_ALLOW_32), spdif_check_sr);
+	EnableControl(hwnd, IDC_CHK_SPDIF_STEREO_PT, spdif_encode);
+	EnableControl(hwnd, IDC_CHK_SPDIF_ALLOW_48, spdif_check_sr);
+	EnableControl(hwnd, IDC_CHK_SPDIF_ALLOW_44, spdif_check_sr);
+	EnableControl(hwnd, IDC_CHK_SPDIF_ALLOW_32, spdif_check_sr);
 
 	CheckDlgButton(hwnd, IDC_CHK_QUERY_SINK, spdif_query_sink ? BST_CHECKED: BST_UNCHECKED);
 	CheckDlgButton(hwnd, IDC_CHK_CLOSE_SPDIF, spdif_close_at_end ? BST_CHECKED: BST_UNCHECKED);
+#endif
 }
 
 void ConfigDlg::update_dynamic_controls()
 {
-	if (in_spk != old_in_spk || m_refresh)
+	if ((in_spk != old_in_spk) || m_refresh)
 	{
-		char buf[128];
+		TCHAR buf[128] = { 0 };
 		old_in_spk = in_spk;
-		sprintf(buf, "%s %s %iHz", in_spk.format_text(), in_spk.mode_text(), in_spk.sample_rate);
-		SetDlgItemText(hwnd, IDC_LBL_INPUT, buf);
+		StringCchPrintf(buf, ARRAYSIZE(buf),
+#ifdef _UNICODE
+						TEXT("Output format    (Current input format: %hs %hs @ %iHz)"),
+#else
+						TEXT("Output format    (Current input format: %s %s @ %iHz)"),
+#endif
+						in_spk.format_text(),
+						in_spk.mode_text(),
+						in_spk.sample_rate);
+		SetDlgItemText(hwnd, IDC_GRP_OUTPUT, buf);
 	}
 
 	/////////////////////////////////////
 	// Stream info
+	char infoA[ARRAYSIZE(old_info)] = { 0 };
+	wchar_t infoW[ARRAYSIZE(old_info)] = { 0 };
+	m_dvd_graph->get_info(infoA, ARRAYSIZE(old_info));
+#ifndef _UNICODDE
+	cr2crlf(infoA, ARRAYSIZE(old_info));
+#endif
+	StringCchPrintf(infoW, ARRAYSIZE(infoW), L"%S", infoA);
 
-	char info[sizeof(old_info)];
-	memset(info, 0, sizeof(old_info));
-	m_dvd_graph->get_info(info, sizeof(old_info));
-	cr2crlf(info, sizeof(old_info));
-	if (memcmp(info, old_info, sizeof(old_info)) || m_refresh)
+	if (memcmp(infoW, old_info, ARRAYSIZE(old_info)) || m_refresh)
 	{
-		memcpy(old_info, info, sizeof(old_info));
-		SendDlgItemMessage(hwnd, IDC_EDT_INFO, WM_SETTEXT, 0, (LONG)(LPSTR)info);
+		memcpy(old_info, infoW, ARRAYSIZE(old_info) * sizeof(TCHAR));
+		SendDlgItemMessage(hwnd, IDC_EDT_INFO, WM_SETTEXT, 0, (LPARAM)infoW);
 	}
 
+#ifdef USE_SPDIF
 	/////////////////////////////////////
 	// Frames/errors
-
-	sprintf(info, "%i", m_dvd_graph->dec.get_frames() + m_dvd_graph->spdifer_pt.get_frames() + m_dvd_graph->spdifer_enc.get_frames());
-	SetDlgItemText(hwnd, IDC_EDT_FRAMES, info);
-	sprintf(info, "%i", m_dvd_graph->dec.get_errors() + m_dvd_graph->spdifer_pt.get_errors() + m_dvd_graph->spdifer_enc.get_errors());
-	SetDlgItemText(hwnd, IDC_EDT_ERRORS, info);
+	StringCchPrintf(infoW, ARRAYSIZE(infoW), L"%i",
+					m_dvd_graph->dec.get_frames() +
+					m_dvd_graph->spdifer_pt.get_frames() +
+					m_dvd_graph->spdifer_enc.get_frames());
+	SetDlgItemText(hwnd, IDC_EDT_FRAMES, infoW);
+	StringCchPrintf(infoW, ARRAYSIZE(infoW), L"%i",
+					m_dvd_graph->dec.get_errors() +
+					m_dvd_graph->spdifer_pt.get_errors() +
+					m_dvd_graph->spdifer_enc.get_errors());
+	SetDlgItemText(hwnd, IDC_EDT_ERRORS, infoW);
+#endif
 
 	/////////////////////////////////////
 	// I/O Levels
-
 	for (int ch = 0; ch < NCHANNELS; ch++)
 	{
 		if (invert_levels)
@@ -816,19 +839,16 @@ void ConfigDlg::update_dynamic_controls()
 
 	/////////////////////////////////////
 	// Auto gain control
-
 	SendDlgItemMessage(hwnd, IDC_SLI_GAIN, TBM_SETPOS, TRUE, long(-value2db(gain) * ticks));
 	edt_gain.update_value(value2db(gain));
 
 	/////////////////////////////////////
 	// DRC
-
 	SendDlgItemMessage(hwnd, IDC_SLI_DRC_LEVEL, TBM_SETPOS, TRUE, long(-value2db(drc_level) * ticks));
 	edt_drc_level.update_value(value2db(drc_level));
 
 	/////////////////////////////////////
 	// Matrix controls
-
 	if (auto_matrix)
 		update_matrix_controls();
 
@@ -837,20 +857,19 @@ void ConfigDlg::update_dynamic_controls()
 
 void ConfigDlg::update_matrix_controls()
 {
-	bool auto_matrix;
-	matrix_t matrix;
+	matrix_t _matrix;
+	m_proc->get_matrix(_matrix);
 
-	m_proc->get_matrix(matrix);
-	auto_matrix = m_proc->get_auto_matrix();
+	const bool _auto_matrix = m_proc->get_auto_matrix();
 
-	if (memcmp(&old_matrix, &matrix, sizeof(matrix_t)) || !auto_matrix || m_refresh)
+	if (memcmp(&old_matrix, &_matrix, sizeof(matrix_t)) || !_auto_matrix || m_refresh)
 	{
-		memcpy(&old_matrix, &matrix, sizeof(matrix_t));
+		memcpy(&old_matrix, &_matrix, sizeof(matrix_t));
 		for (int i = 0; i < 6; i++)
 			for (int j = 0; j < 6; j++)
 			{
-				edt_matrix[i][j].update_value(matrix[j][i]);
-				SendDlgItemMessage(hwnd, matrix_controls[j][i], EM_SETREADONLY, auto_matrix, 0);
+				edt_matrix[i][j].update_value(_matrix[j][i]);
+				SendDlgItemMessage(hwnd, matrix_controls[j][i], EM_SETREADONLY, _auto_matrix, 0);
 			}
 	}
 }
@@ -864,7 +883,6 @@ void ConfigDlg::command(int control, int message)
 {
 	/////////////////////////////////////
 	// Matrix controls
-
 	if (message == CB_ENTER)
 	{
 		matrix_t matrix;
@@ -891,26 +909,32 @@ void ConfigDlg::command(int control, int message)
 	{
 		/////////////////////////////////////
 		// Speaker selection
-
 		case IDC_CMB_SPK:
 		case IDC_CMB_FORMAT:
 		case IDC_CMB_RATE:
+#ifdef USE_SPDIF
 		case IDC_CHK_USE_SPDIF:
+#endif
+		{
 			if (control == IDC_CHK_USE_SPDIF || message == CBN_SELENDOK)
 			{
-				int ispk = SendDlgItemMessage(hwnd, IDC_CMB_SPK, CB_GETCURSEL, 0, 0);
-				int ifmt = SendDlgItemMessage(hwnd, IDC_CMB_FORMAT, CB_GETCURSEL, 0, 0);
-				int rate = SendDlgItemMessage(hwnd, IDC_CMB_RATE, CB_GETCURSEL, 0, 0);
+				const int ispk = (const int)SendDlgItemMessage(hwnd, IDC_CMB_SPK, CB_GETCURSEL, 0, 0),
+						  ifmt = (const int)SendDlgItemMessage(hwnd, IDC_CMB_FORMAT, CB_GETCURSEL, 0, 0),
+						  rate = (const int)SendDlgItemMessage(hwnd, IDC_CMB_RATE, CB_GETCURSEL, 0, 0);
+#ifdef USE_SPDIF
 				if (GetDlgItem(hwnd, IDC_CHK_USE_SPDIF))
 					use_spdif = IsDlgButtonChecked(hwnd, IDC_CHK_USE_SPDIF) == BST_CHECKED;
 				m_outMixer->ChangeOutput(ispk, ifmt, rate, use_spdif);
+#else
+				m_outMixer->ChangeOutput(ispk, ifmt, rate);
+#endif
 				update();
 			}
 			break;
+		}
 
 		/////////////////////////////////////
 		// Interface
-
 		case IDC_CHK_INVERT_LEVELS:
 			{
 				invert_levels = IsDlgButtonChecked(hwnd, IDC_CHK_INVERT_LEVELS) == BST_CHECKED;
@@ -918,8 +942,9 @@ void ConfigDlg::command(int control, int message)
 				update();
 				break;
 			}
-
+#ifdef LEGACY_CODE
 		case IDC_EDT_REFRESH_TIME:
+		{
 			if (message == CB_ENTER)
 			{
 				refresh_time = int(edt_refresh_time.value);
@@ -928,38 +953,54 @@ void ConfigDlg::command(int control, int message)
 				update();
 			}
 			break;
+		}
+#endif
 
 		/////////////////////////////////////
 		// Output plugin selection
-
 		case IDC_CMB_OUTPUT:
+		{
 			if (message == CBN_SELENDOK)
 			{
-				int index = SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_GETCURSEL, 0, 0);
-				char name[MAX_PATH];
-				SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_GETLBTEXT, index, (LPARAM)name);
-				m_outMixer->set_OutputPlugin(name);
+				m_outMixer->set_OutputPlugin((LPCTSTR)SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_GETITEMDATA,
+											SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_GETCURSEL, 0, 0), 0));
 				update();
 			}
 			break;
+		}
 
 		/////////////////////////////////////
 		// Configure/About output plugin
-
 		case IDC_BTN_CONFIGURE:
-			if (message == BN_CLICKED)
-				g_pModSlave->Config( hwnd );
-			break;
-
 		case IDC_BTN_ABOUT:
+		{
 			if (message == BN_CLICKED)
-				g_pModSlave->About( hwnd );
+			{
+				Out_Module* out_plugin = get_out_plugin((LPCTSTR)SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_GETITEMDATA,
+														SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_GETCURSEL, 0, 0), 0));
+				if (out_plugin)
+				{
+					if (control == IDC_BTN_CONFIGURE)
+					{
+						if (out_plugin->Config)
+						{
+							out_plugin->Config(hwnd);
+						}
+		}
+					else
+					{
+						if (out_plugin->About)
+		{
+							out_plugin->About(hwnd);
+						}
+					}
+				}
+			}
 			break;
-
+		}
 
 		/////////////////////////////////////
 		// DRC
-
 		case IDC_CHK_DRC:
 		{
 			drc = (SendDlgItemMessage(hwnd, IDC_CHK_DRC, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -967,8 +1008,8 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_SLI_DRC_POWER:
+		{
 			if (message == TB_THUMBPOSITION || message == TB_ENDTRACK)
 			{
 				drc_power = -double(SendDlgItemMessage(hwnd, IDC_SLI_DRC_POWER, TBM_GETPOS, 0, 0)) / ticks;
@@ -976,8 +1017,9 @@ void ConfigDlg::command(int control, int message)
 				update();
 			}
 			break;
-
+		}
 		case IDC_EDT_DRC_POWER:
+		{
 			if (message == CB_ENTER)
 			{
 				drc_power = edt_drc_power.value;
@@ -985,11 +1027,12 @@ void ConfigDlg::command(int control, int message)
 				update();
 			}
 			break;
+		}
 
 		/////////////////////////////////////
 		// Auto gain control
-
 		case IDC_SLI_MASTER:
+		{
 			if (message == TB_THUMBPOSITION || message == TB_ENDTRACK)
 			{
 				master = db2value(-double(SendDlgItemMessage(hwnd, IDC_SLI_MASTER,TBM_GETPOS, 0, 0))/ticks);
@@ -997,16 +1040,18 @@ void ConfigDlg::command(int control, int message)
 				update();
 			}
 			break;
-
+		}
 		case IDC_EDT_MASTER:
+		{
 			if (message == CB_ENTER)
 			{
 				m_proc->set_master(db2value(edt_master.value));
 				update();
 			}
 			break;
-
+		}
 		case IDC_EDT_ATTACK:
+		{
 			if (message == CB_ENTER)
 			{
 				attack = edt_attack.value;
@@ -1014,8 +1059,9 @@ void ConfigDlg::command(int control, int message)
 				update();
 			}
 			break;
-
+		}
 		case IDC_EDT_RELEASE:
+		{
 			if (message == CB_ENTER)
 			{
 				release = edt_release.value;
@@ -1023,13 +1069,14 @@ void ConfigDlg::command(int control, int message)
 				update();
 			}
 			break;
+		}
 
 		/////////////////////////////////////
 		// Gain controls
-
 		case IDC_SLI_VOICE:
 		case IDC_SLI_SUR:
 		case IDC_SLI_LFE:
+		{
 			if (message == TB_THUMBPOSITION || message == TB_ENDTRACK)
 			{
 				clev   = db2value(-double(SendDlgItemMessage(hwnd, IDC_SLI_VOICE, TBM_GETPOS, 0, 0))/ticks);
@@ -1041,10 +1088,11 @@ void ConfigDlg::command(int control, int message)
 				update();
 			}
 			break;
-
+		}
 		case IDC_EDT_VOICE:
 		case IDC_EDT_SUR:
 		case IDC_EDT_LFE:
+		{
 			if (message == CB_ENTER)
 			{  
 				clev   = db2value(edt_voice.value);
@@ -1056,16 +1104,17 @@ void ConfigDlg::command(int control, int message)
 				update();
 			}
 			break;
+		}
 
 		/////////////////////////////////////
 		// I/O Gains
-
 		case IDC_SLI_IN_L:
 		case IDC_SLI_IN_C:
 		case IDC_SLI_IN_R:
 		case IDC_SLI_IN_SL:
 		case IDC_SLI_IN_SR:
 		case IDC_SLI_IN_LFE:
+		{
 			if (message == TB_THUMBPOSITION || message == TB_ENDTRACK)
 			{
 				for (int ch = 0; ch < NCHANNELS; ch++)
@@ -1075,13 +1124,14 @@ void ConfigDlg::command(int control, int message)
 				update();
 			}
 			break;
-
+		}
 		case IDC_EDT_IN_L:
 		case IDC_EDT_IN_C:
 		case IDC_EDT_IN_R:
 		case IDC_EDT_IN_SL:
 		case IDC_EDT_IN_SR:
 		case IDC_EDT_IN_LFE:
+		{
 			if (message == CB_ENTER)
 			{
 				for (int ch = 0; ch < NCHANNELS; ch++)
@@ -1091,13 +1141,14 @@ void ConfigDlg::command(int control, int message)
 				update();
 			}
 			break;
-
+		}
 		case IDC_SLI_OUT_L:
 		case IDC_SLI_OUT_C:
 		case IDC_SLI_OUT_R:
 		case IDC_SLI_OUT_SL:
 		case IDC_SLI_OUT_SR:
 		case IDC_SLI_OUT_LFE:
+		{
 			if (message == TB_THUMBPOSITION || message == TB_ENDTRACK)
 			{
 				for (int ch = 0; ch < NCHANNELS; ch++)
@@ -1107,13 +1158,14 @@ void ConfigDlg::command(int control, int message)
 				update();
 			}
 			break;
-
+		}
 		case IDC_EDT_OUT_L:
 		case IDC_EDT_OUT_C:
 		case IDC_EDT_OUT_R:
 		case IDC_EDT_OUT_SL:
 		case IDC_EDT_OUT_SR:
 		case IDC_EDT_OUT_LFE:
+		{
 			if (message == CB_ENTER)
 			{
 				for (int ch = 0; ch < NCHANNELS; ch++)
@@ -1123,10 +1175,10 @@ void ConfigDlg::command(int control, int message)
 				update();
 			}
 			break;
+		}
 
 		/////////////////////////////////////
 		// Delay
-
 		case IDC_CHK_DELAYS:
 		{
 			delay = (SendDlgItemMessage(hwnd, IDC_CHK_DELAYS, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -1134,13 +1186,13 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_EDT_DL:
 		case IDC_EDT_DC:
 		case IDC_EDT_DR:
 		case IDC_EDT_DSL:
 		case IDC_EDT_DSR:
 		case IDC_EDT_DLFE:
+		{
 			if (message == CB_ENTER)
 			{
 				for (int ch = 0; ch < NCHANNELS; ch++)
@@ -1150,19 +1202,20 @@ void ConfigDlg::command(int control, int message)
 				update();
 			}
 			break;
-
+		}
 		case IDC_CMB_UNITS:
+		{
 			if (message == CBN_SELENDOK)
 			{
-				delay_units = unit_from_index(SendDlgItemMessage(hwnd, IDC_CMB_UNITS, CB_GETCURSEL, 0, 0));
+				delay_units = unit_from_index((int)SendDlgItemMessage(hwnd, IDC_CMB_UNITS, CB_GETCURSEL, 0, 0));
 				m_proc->set_delay_units(delay_units);
 				update();
 			}
 			break;
+		}
 
 		/////////////////////////////////////
 		// Bass redirection
-
 		case IDC_CHK_BASS_REDIR:
 		{
 			bass_redir = (SendDlgItemMessage(hwnd, IDC_CHK_BASS_REDIR, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -1170,8 +1223,8 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_EDT_BASS_FREQ:
+		{
 			if (message == CB_ENTER)
 			{
 				bass_freq = (int)edt_bass_freq.value;
@@ -1179,10 +1232,10 @@ void ConfigDlg::command(int control, int message)
 				update();
 			}
 			break;
+		}
 
 		/////////////////////////////////////
 		// Flags
-
 		case IDC_CHK_AUTO_GAIN:
 		{
 			auto_gain = (SendDlgItemMessage(hwnd, IDC_CHK_AUTO_GAIN, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -1190,7 +1243,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_CHK_NORMALIZE:
 		{
 			normalize = (SendDlgItemMessage(hwnd, IDC_CHK_NORMALIZE, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -1198,7 +1250,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_CHK_AUTO_MATRIX:
 		{
 			auto_matrix = (SendDlgItemMessage(hwnd, IDC_CHK_AUTO_MATRIX, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -1207,7 +1258,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_CHK_NORM_MATRIX:
 		{
 			normalize_matrix = (SendDlgItemMessage(hwnd, IDC_CHK_NORM_MATRIX, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -1215,7 +1265,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_CHK_VOICE_CONTROL:
 		{
 			voice_control = (SendDlgItemMessage(hwnd, IDC_CHK_VOICE_CONTROL, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -1223,7 +1272,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_CHK_EXPAND_STEREO:
 		{
 			expand_stereo = (SendDlgItemMessage(hwnd, IDC_CHK_EXPAND_STEREO, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -1232,10 +1280,9 @@ void ConfigDlg::command(int control, int message)
 			break;
 		}
 
-
+#ifdef USE_SPDIF
 		/////////////////////////////////////
 		// SPDIF/DTS output mode
-
 		case IDC_RBT_DTS_MODE_AUTO:
 		{
 			spdif_dts_mode = DTS_MODE_AUTO;
@@ -1243,7 +1290,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_RBT_DTS_MODE_WRAPPED:
 		{
 			spdif_dts_mode = DTS_MODE_WRAPPED;
@@ -1251,7 +1297,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_RBT_DTS_MODE_PADDED:
 		{
 			spdif_dts_mode = DTS_MODE_PADDED;
@@ -1262,7 +1307,6 @@ void ConfigDlg::command(int control, int message)
 
 		/////////////////////////////////////
 		// SPDIF/DTS conversion
-
 		case IDC_RBT_DTS_CONV_NONE:
 		{
 			spdif_dts_conv = DTS_CONV_NONE;
@@ -1270,7 +1314,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_RBT_DTS_CONV_14BIT:
 		{
 			spdif_dts_conv = DTS_CONV_14BIT;
@@ -1278,7 +1321,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_RBT_DTS_CONV_16BIT:
 		{
 			spdif_dts_conv = DTS_CONV_16BIT;
@@ -1289,24 +1331,23 @@ void ConfigDlg::command(int control, int message)
 
 		/////////////////////////////////////
 		// SPDIF options
-
 		case IDC_CHK_USE_DETECTOR:
 		{
 			spdif_use_detector = IsDlgButtonChecked(hwnd, IDC_CHK_USE_DETECTOR) == BST_CHECKED;
 			m_dvd_graph->set_use_detector(spdif_use_detector);
 			break;
 		}
-
 		case IDC_CHK_SPDIF_AS_PCM:
 		{
 			spdif_as_pcm = IsDlgButtonChecked(hwnd, IDC_CHK_SPDIF_AS_PCM) == BST_CHECKED;
 			if (spdif_as_pcm)
-				spdif_as_pcm = MessageBox(hwnd, "This option is DANGEROUS! Filter may make very loud noise with this option enabled. Press 'No' to enable this option.", "Dangerous option!", MB_YESNO | MB_ICONWARNING) == IDNO;
+				spdif_as_pcm = MessageBox(hwnd, TEXT("This option is DANGEROUS! Filter may make very loud ")
+										  TEXT("noise with this option enabled. Press 'No' to enable this ")
+										  TEXT("option."), TEXT("Dangerous option!"), MB_YESNO | MB_ICONWARNING) == IDNO;
 			m_dvd_graph->set_spdif_as_pcm(spdif_as_pcm);
 			update();
 			break;
 		}
-
 		case IDC_CHK_SPDIF_ENCODE:
 		{
 			spdif_encode = IsDlgButtonChecked(hwnd, IDC_CHK_SPDIF_ENCODE) == BST_CHECKED;
@@ -1314,7 +1355,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_CHK_SPDIF_STEREO_PT:
 		{
 			spdif_stereo_pt = IsDlgButtonChecked(hwnd, IDC_CHK_SPDIF_STEREO_PT) == BST_CHECKED;
@@ -1322,11 +1362,11 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_CMB_SPDIF_BITRATE:
+		{
 			if (message == CBN_SELENDOK)
 			{
-				int ibitrate = SendDlgItemMessage(hwnd, IDC_CMB_SPDIF_BITRATE, CB_GETCURSEL, 0, 0);
+				const int ibitrate = (const int )SendDlgItemMessage(hwnd, IDC_CMB_SPDIF_BITRATE, CB_GETCURSEL, 0, 0);
 				if (ibitrate != CB_ERR)
 				{
 					spdif_bitrate = bitrate_from_index(ibitrate);
@@ -1335,7 +1375,7 @@ void ConfigDlg::command(int control, int message)
 				update();
 				break;
 			}
-
+		}
 		case IDC_CHK_SPDIF_CHECK_SR:
 		{
 			spdif_check_sr = IsDlgButtonChecked(hwnd, IDC_CHK_SPDIF_CHECK_SR) == BST_CHECKED;
@@ -1343,7 +1383,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_CHK_SPDIF_ALLOW_48:
 		{
 			spdif_allow_48 = IsDlgButtonChecked(hwnd, IDC_CHK_SPDIF_ALLOW_48) == BST_CHECKED;
@@ -1351,7 +1390,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_CHK_SPDIF_ALLOW_44:
 		{
 			spdif_allow_44 = IsDlgButtonChecked(hwnd, IDC_CHK_SPDIF_ALLOW_44) == BST_CHECKED;
@@ -1359,7 +1397,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_CHK_SPDIF_ALLOW_32:
 		{
 			spdif_allow_32 = IsDlgButtonChecked(hwnd, IDC_CHK_SPDIF_ALLOW_32) == BST_CHECKED;
@@ -1367,8 +1404,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
-
 		case IDC_CHK_QUERY_SINK:
 		{
 			spdif_query_sink = IsDlgButtonChecked(hwnd, IDC_CHK_QUERY_SINK) == BST_CHECKED;
@@ -1376,7 +1411,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
-
 		case IDC_CHK_CLOSE_SPDIF:
 		{
 			spdif_close_at_end = IsDlgButtonChecked(hwnd, IDC_CHK_CLOSE_SPDIF) == BST_CHECKED;
@@ -1384,6 +1418,6 @@ void ConfigDlg::command(int control, int message)
 			update();
 			break;
 		}
+#endif
 	}
 }
-

@@ -1,13 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-
+#include <tchar.h>
 #include <windows.h>
 #include <commctrl.h>   // tooltip
+#include <shellapi.h>
+#include <strsafe.h>
 #include "controls.h"
 
 #define TTS_BALLOON 0x40
 
+#if 0
 Tooltip::Tooltip()
 {
   hwnd = 0;
@@ -24,22 +27,18 @@ Tooltip::~Tooltip()
   destroy();
 };
 
-
-bool
-Tooltip::create(HINSTANCE _hinstance, HWND _hwnd, bool _enabled)
+bool Tooltip::create(HINSTANCE _hinstance, HWND _hwnd, bool _enabled)
 {
   destroy();
 
   // create tooltip control
 
   tooltip = CreateWindowEx(
-    WS_EX_TOPMOST, TOOLTIPS_CLASS, "AC3Filter tooltips", 
+		WS_EX_TOPMOST, TOOLTIPS_CLASS, TEXT("AC3Filter tooltips"),
     WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX | TTS_BALLOON,
-    CW_USEDEFAULT, CW_USEDEFAULT, 
-    CW_USEDEFAULT, CW_USEDEFAULT,
-    _hwnd, 0, _hinstance, 0);
+		0, 0, 0, 0, _hwnd, 0, _hinstance, 0);
 
-  if (tooltip == 0)
+	if (!IsWindow(tooltip))
     return false;
 
   hwnd = _hwnd;
@@ -48,10 +47,9 @@ Tooltip::create(HINSTANCE _hinstance, HWND _hwnd, bool _enabled)
   return true;
 }
 
-void
-Tooltip::destroy()
+void Tooltip::destroy()
 {
-  if (tooltip)
+	if (IsWindow(tooltip))
     DestroyWindow(tooltip);
 
   hwnd = 0;
@@ -62,27 +60,23 @@ Tooltip::destroy()
   visible = false;
 }
 
-void
-Tooltip::enable(bool _enabled)
+void Tooltip::enable(bool _enabled)
 {
   enabled = _enabled;
   SendMessage(tooltip, TTM_ACTIVATE, enabled, 0);
 }
 
-void
-Tooltip::set_width(int _width)
+void Tooltip::set_width(int _width)
 {
   SendMessage(tooltip, TTM_SETMAXTIPWIDTH, 0, _width);
 }
 
-void
-Tooltip::set_delay(int _ms)
+void Tooltip::set_delay(int _ms)
 {
   delay = _ms;
 }
 
-void
-Tooltip::show(bool _visible)
+void Tooltip::show(bool _visible)
 {
   visible = _visible;
   SendMessage(tooltip, TTM_TRACKACTIVATE, FALSE, 0);
@@ -104,8 +98,7 @@ Tooltip::show(bool _visible)
           mouse_hwnd = child_hwnd;
       }
 
-      TOOLINFO ti;
-      memset(&ti, 0, sizeof(ti));
+			TOOLINFO ti = {0};
       ti.cbSize = sizeof(ti);
       ti.hwnd = hwnd;
       ti.uId = (UINT)mouse_hwnd;
@@ -116,8 +109,7 @@ Tooltip::show(bool _visible)
   }
 }
 
-void
-Tooltip::track()
+void Tooltip::track()
 {
   if (!enabled)
     return;
@@ -144,13 +136,10 @@ Tooltip::track()
   }
 }
 
-void
-Tooltip::add_window(HWND window, const char *text)
+void Tooltip::add_window(HWND window, const char *text)
 {
-  TOOLINFO ti;
-  memset(&ti, 0, sizeof(ti));
+	TOOLINFO ti = {0};
   ti.cbSize = sizeof(ti);
-  ti.uFlags = 0;
   ti.hwnd = hwnd;
   ti.hinst = hinstance;
   ti.uId = (UINT)window;
@@ -158,65 +147,39 @@ Tooltip::add_window(HWND window, const char *text)
   SendMessage(tooltip, TTM_ADDTOOL, 0, (LPARAM)&ti);
 }
 
-void
-Tooltip::add_control(int control_id, const char *text)
+void Tooltip::add_control(int control_id, const char *text)
 {
   HWND control = GetDlgItem(hwnd, control_id);
-  if (control)
+	if (IsWindow(control))
     add_window(control, text);
-/*
-  {
-    RECT dlg_rect;
-    RECT control_rect;
-    GetWindowRect(hwnd, &dlg_rect);
-    GetWindowRect(control, &control_rect);
-
-    TOOLINFO ti;
-    memset(&ti, 0, sizeof(ti));
-    ti.cbSize = sizeof(ti);
-    ti.uFlags = 0;
-    ti.hwnd = hwnd;
-    ti.hinst = hinstance;
-    ti.uId = (UINT)control;
-    ti.lpszText = (LPTSTR)text;
-    ti.rect.left = control_rect.left - dlg_rect.left;
-    ti.rect.right = control_rect.right - dlg_rect.left;
-    ti.rect.top = control_rect.top - dlg_rect.top;
-    ti.rect.bottom = control_rect.bottom - dlg_rect.top;
-
-    SendMessage(tooltip, TTM_ADDTOOL, 0, (LPARAM)&ti);
   }
-*/
-}
-
+#endif
 
 Edit::~Edit()
 {
   unlink();
 }
 
-void
-Edit::link(HWND _dlg, int _item)
+void Edit::link(HWND _dlg, int _item)
 {
-  if (hwnd) unlink();
+	if (IsWindow(hwnd)) unlink();
 
   dlg = _dlg;
   item = _item;
   hwnd = GetDlgItem(_dlg, _item);
-  if (hwnd)
+	if (IsWindow(hwnd))
   {
-    wndproc = (WNDPROC) SetWindowLong(hwnd, GWL_WNDPROC, (DWORD) SubClassProc);
-    SetWindowLong(hwnd, GWL_USERDATA, (DWORD)(Edit *)this);
+		wndproc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)SubClassProc);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)(Edit *)this);
   }
 }
 
-void 
-Edit::unlink()
+void Edit::unlink()
 {
-  if (hwnd)
+	if (IsWindow(hwnd))
   {
-    SetWindowLong(hwnd, GWL_WNDPROC, (DWORD)wndproc);
-    SetWindowLong(hwnd, GWL_USERDATA, 0);
+		SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)wndproc);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
   }
 
   dlg = 0;
@@ -224,23 +187,23 @@ Edit::unlink()
   hwnd = 0;
 }
 
-void
-Edit::enable(bool enabled)
+void Edit::enable(bool enabled)
 {
   EnableWindow(hwnd, enabled);
 }
 
-LRESULT CALLBACK 
-Edit::SubClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Edit::SubClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  Edit *iam = (Edit *)GetWindowLong(hwnd, GWL_USERDATA);
+	Edit *iam = (Edit *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
   switch (msg) 
   { 
     case WM_GETDLGCODE:
+		{
       return CallWindowProc(iam->wndproc, hwnd, msg, wParam, lParam) | DLGC_WANTALLKEYS;
-
+		}
     case WM_KILLFOCUS:
+		{
       if (iam->editing)
       {
         if (iam->read_value())
@@ -252,13 +215,14 @@ Edit::SubClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
           iam->restore_value();
           iam->write_value();
-          MessageBox(0, iam->incorrect_value(), "Error", MB_ICONEXCLAMATION | MB_OK);
+					MessageBox(0, iam->incorrect_value(), TEXT("Error"), MB_ICONEXCLAMATION);
         }
         iam->editing = false;
       }
       break;
-
+		}
     case WM_KEYDOWN: 
+		{
       if (!iam->editing)
       {
         iam->backup_value();
@@ -273,7 +237,7 @@ Edit::SubClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
           SendMessage(iam->dlg, WM_COMMAND, MAKEWPARAM(iam->item, CB_ENTER), 0); 
         }
         else
-          MessageBox(0, iam->incorrect_value(), "Error", MB_ICONEXCLAMATION | MB_OK);
+					MessageBox(0, iam->incorrect_value(), TEXT("Error"), MB_ICONEXCLAMATION);
         return 0; 
       }
 
@@ -286,29 +250,31 @@ Edit::SubClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       }
 
       break;
-                            
+		}
     case WM_KEYUP: 
     case WM_CHAR: 
+		{
       switch (wParam) 
       { 
         case VK_RETURN: 
         case VK_ESCAPE: 
+				{
           return 0; 
       }
+			}
       break;
-
+		}
   } // switch  (msg)
 
   // Call the original window procedure for default processing. 
   return CallWindowProc(iam->wndproc, hwnd, msg, wParam, lParam); 
 }
 
-bool
-DoubleEdit::read_value()
+bool DoubleEdit::read_value()
 {
-  char buf[256];
+	char buf[256] = {0};
 
-  if (!SendDlgItemMessage(dlg, item, WM_GETTEXT, 256, (LONG)buf))
+	if (!SendDlgItemMessage(dlg, item, WM_GETTEXT, ARRAYSIZE(buf), (LPARAM)buf))
   {
     value = 0;
     return true;
@@ -323,32 +289,28 @@ DoubleEdit::read_value()
   return true;
 }
 
-void
-DoubleEdit::backup_value()
+void DoubleEdit::backup_value()
 {
   old_value = value;
 }
 
-void 
-DoubleEdit::restore_value()
+void DoubleEdit::restore_value()
 {
   value = old_value;
 }
 
-
-void 
-DoubleEdit::write_value()
+void DoubleEdit::write_value()
 {
-  char buf[256];
-  sprintf(buf, "%.4g", value);
+	wchar_t buf[256] = { 0 };
+	StringCchPrintf(buf, ARRAYSIZE(buf), L"%.4g", value);
   SetDlgItemText(dlg, item, buf);
 }
 
 TextEdit::TextEdit(size_t _size)
 {
   size = 0;
-  value = new char[_size+1];
-  old_value = new char[_size+1];
+	value = new TCHAR[_size+1];
+	old_value = new TCHAR[_size+1];
   value[0] = 0;
   old_value[0] = 0;
 
@@ -362,10 +324,9 @@ TextEdit::~TextEdit()
   if (old_value) delete old_value;
 }
 
-bool
-TextEdit::read_value()
+bool TextEdit::read_value()
 {
-  if (!SendDlgItemMessage(dlg, item, WM_GETTEXT, size, (LONG)value))
+	if (!SendDlgItemMessage(dlg, item, WM_GETTEXT, size, (LPARAM)value))
     value[0] = 0;
   else
     value[size] = 0;
@@ -373,68 +334,61 @@ TextEdit::read_value()
   return true;
 }
 
-void
-TextEdit::backup_value()
+void TextEdit::backup_value()
 {
-  strcpy(old_value, value);
+	_tcscpy(old_value, value);
 }
 
-void 
-TextEdit::restore_value()
+void TextEdit::restore_value()
 {
-  strcpy(value, old_value);
+	_tcscpy(value, old_value);
 }
 
-
-void 
-TextEdit::write_value()
+void TextEdit::write_value()
 {
   SetDlgItemText(dlg, item, value);
 }
 
-void 
-TextEdit::set_text(const char *_text)
+void TextEdit::set_text(const TCHAR *_text)
 {
-  strncpy(value, _text, size);
+	_tcsncpy(value, _text, size);
   value[size] = 0;
   write_value();
 }
 
-
+#if 0
 LinkButton::~LinkButton()
 {
   unlink();
 }
 
-void
-LinkButton::link(HWND _dlg, int _item)
+void LinkButton::link(HWND _dlg, int _item)
 {
-  if (hwnd) unlink();
+	if (IsWindow(hwnd)) unlink();
 
   dlg = _dlg;
   item = _item;
   hwnd = GetDlgItem(_dlg, _item);
   if (hwnd)
   {
-    wndproc = (WNDPROC) SetWindowLong(hwnd, GWL_WNDPROC, (DWORD) SubClassProc);
-    SetWindowLong(hwnd, GWL_USERDATA, (DWORD)(Edit *)this);
+		wndproc = (WNDPROC) SetWindowLongPtr(hwnd, GWLP_WNDPROC, (DWORD) SubClassProc);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (DWORD)(Edit *)this);
   }
 
   // Create underlined font
   HFONT dlg_font = (HFONT)SendDlgItemMessage(dlg, item, WM_GETFONT, 0, 0);
-  LOGFONT logfont;
+	LOGFONT logfont = { 0 };
   GetObject(dlg_font, sizeof(LOGFONT), &logfont);
   logfont.lfUnderline = TRUE;
   font = CreateFontIndirect(&logfont);
 }
 
-void 
-LinkButton::unlink()
+void LinkButton::unlink()
 {
-  if (hwnd)
+	if (IsWindow(hwnd))
   {
-    SetWindowLong(hwnd, GWL_WNDPROC, (DWORD)wndproc);
-    SetWindowLong(hwnd, GWL_USERDATA, 0);
+		SetWindowLongPtr(hwnd, GWLP_WNDPROC, (DWORD)wndproc);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
   }
   DeleteObject(font);
 
@@ -444,42 +398,38 @@ LinkButton::unlink()
   font = 0;
 }
 
-LRESULT CALLBACK 
-LinkButton::SubClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK LinkButton::SubClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  LinkButton *iam = (LinkButton *)GetWindowLong(hwnd, GWL_USERDATA);
+	LinkButton *iam = (LinkButton *)GetWindowLongPtr(hwnd, GWL_USERDATA);
 
   switch (msg) 
   { 
     case WM_PAINT: 
     {
-      PAINTSTRUCT ps;
+			PAINTSTRUCT ps = {0};
       HDC dc = BeginPaint(hwnd, &ps);
       iam->paint(dc);
       EndPaint(hwnd, &ps);
       return 0;
     }
-
     case WM_LBUTTONDOWN:
     {
       iam->press();
       return 0;
     }
-
   } 
         
   // Call the original window procedure for default processing. 
   return CallWindowProc(iam->wndproc, hwnd, msg, wParam, lParam); 
 }
 
-void 
-LinkButton::paint(HDC dc)
+void LinkButton::paint(HDC dc)
 {
   RECT client_rect;
   GetClientRect(hwnd, &client_rect);
 
   int i;
-  char link_text[256];
+	TCHAR link_text[256] = {0};
   int link_text_len = GetWindowText(hwnd, link_text, 256);
 
   // find description text
@@ -497,11 +447,10 @@ LinkButton::paint(HDC dc)
   SelectObject(dc, old_font);
 }
 
-void 
-LinkButton::press()
+void LinkButton::press()
 {
   int i;
-  char link_text[256];
+	TCHAR link_text[256] = {0};
   int link_text_len = GetWindowText(hwnd, link_text, 256);
 
   // find url
@@ -514,7 +463,8 @@ LinkButton::press()
 
   // execute url
   if (i < link_text_len)
-    ShellExecute(hwnd, 0, link_text + i, 0, 0, SW_SHOWMAXIMIZED);
+		OpenAction(hwnd, link_text + i, NULL);
   else
-    ShellExecute(hwnd, 0, link_text, 0, 0, SW_SHOWMAXIMIZED);
+		OpenAction(hwnd, link_text, NULL);
 }
+#endif

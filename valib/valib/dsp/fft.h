@@ -8,7 +8,7 @@
 #include "../defs.h"
 #include "../auto_buf.h"
 
-class FFT
+class MM_FFT
 {
 protected:
   AutoBuf<int> fft_ip;
@@ -16,8 +16,8 @@ protected:
   unsigned len;
 
 public:
-  FFT();
-  FFT(unsigned length);
+  MM_FFT();
+  MM_FFT(unsigned length);
 
   bool set_length(unsigned length);
   unsigned get_length() const { return len; }

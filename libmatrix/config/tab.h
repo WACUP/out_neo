@@ -63,7 +63,7 @@ public:
   TabDlg(HINSTANCE hinstance, LPCSTR dlg_res, HWND parent);
   ~TabDlg();
 
-  int  get_page_count()     { return page_count; };
+  int  get_page_count() const { return page_count; };
   TabSheet *get_page(int i) { return i < page_count? pages[i]: 0; };
   void add_page(int i, TabSheet *sheet, char *title);
   void switch_to(int page);

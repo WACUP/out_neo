@@ -40,7 +40,6 @@ public:
   bool   suspended()     const { return f_thread? f_suspended: true; }
 };
 
-
 class CritSec 
 {
 protected:
@@ -58,7 +57,6 @@ public:
   inline void lock()   { EnterCriticalSection(&crit_sec); lock_count++; };
   inline void unlock() { LeaveCriticalSection(&crit_sec); lock_count--; };
 };
-
 
 class AutoLock 
 {

@@ -1,11 +1,18 @@
 #pragma once
-#include <Windows.h>
+#include <windows.h>
+#include <strsafe.h>
+#include <shlwapi.h>
 #include <math.h>
 #include "spk.h"
+#include <winamp/out.h>
+
+#define PLUGIN_VERSION L"1.0"
+#define PLUGIN_NAME TEXT("Not So Neo v") PLUGIN_VERSION
+#define PLUGIN_ID 424242
+
+#ifndef NULLSOFT_OUTH
 
 #define OUT_VER 0x10
-#define PLUGIN_NAME "Matrix Mixer v0.9.163d - "
-#define PLUGIN_ID 424242
 
 typedef struct 
 {
@@ -55,31 +62,34 @@ typedef struct
 	int (*GetWrittenTime)(); // returns time written in MS (used for synching up vis stuff)
 
 } Out_Module;
+#endif
+
+typedef Out_Module* (*WINAMPGETOUTMODULE)();
+
+extern Out_Module g_OutModMaster;
 
 class IOut
 {
 public:
 	virtual void Config(HWND hwndParent) = 0;
-	virtual void About(HWND hwndParent) = 0;
 	//virtual int  Open(int samplerate, int numchannels, int bitspersamp, int bufferlenms, int prebufferms) = 0;
-	virtual int  Open(Speakers spk, int bufferlenms, int prebufferms) = 0;
-	virtual void Close() = 0;
-	virtual int  Write(char *buf, int len) = 0;
-	virtual int  CanWrite() = 0;
-	virtual int  IsPlaying() = 0;
-	virtual int  Pause(int pause) = 0;
-	virtual void SetVolume(int volume) = 0;
-	virtual void SetPan(int pan) = 0;
-	virtual void Flush(int t) = 0;
-	virtual int  GetOutputTime() = 0;
-	virtual int  GetWrittenTime() = 0;
+	virtual int  Open(Speakers spk, const int bufferlenms, const int prebufferms) = 0;
+	virtual void Close(void) = 0;
+	virtual int  Write(const char *buf, const int len) = 0;
+	virtual int  CanWrite(void) = 0;
+	virtual int  IsPlaying(void) = 0;
+	virtual int  Pause(const int pause) = 0;
+	virtual void SetVolume(const int volume) = 0;
+	virtual void SetPan(const int pan) = 0;
+	virtual void Flush(const int t) = 0;
+	virtual int  GetOutputTime(void) = 0;
+	virtual int  GetWrittenTime(void) = 0;
 };
 
-inline Speakers winamp2spk(int sr, int nch, int bps)
+inline Speakers winamp2spk(const int sr, const int nch, const int bps)
 {
 	int format = FORMAT_PCM16;
 	int mask = MODE_2_0;
-	int level = (int)(pow(2.0,bps)/2 - 1);
 	
 	switch (bps)
 	{
@@ -105,7 +115,6 @@ inline int spk2bps(Speakers spk)
 {
 	switch (spk.format)
 	{
-		case FORMAT_PCM16: return 16;
 		case FORMAT_PCM24: return 24;
 		case FORMAT_PCM32: return 32;
 		default: return 16;
@@ -122,6 +131,18 @@ inline int spk2nch(Speakers spk)
 		case MODE_2_2: return 4;
 		case MODE_3_1 | CH_MASK_LFE: return 5;
 		case MODE_3_2 | CH_MASK_LFE: return 6;
+		default:
+		{
+			switch (spk.original_mask)
+			{
+				case MODE_1_0: return 1;
+				case MODE_2_0: return 2;
+				case MODE_3_0: return 3;
+				case MODE_2_2: return 4;
+				case MODE_3_1 | CH_MASK_LFE: return 5;
+				case MODE_3_2 | CH_MASK_LFE: return 6;
 		default: return 2;
+			}
+		}
 	}
 }

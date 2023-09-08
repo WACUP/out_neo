@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
-	Name="out_mixer"
+	Version="9.00"
+	Name="out_neo"
 	ProjectGUID="{61BFFDBF-42D4-403F-B0FD-74C459D45865}"
 	RootNamespace="out_mixer"
 	Keyword="Win32Proj"

@@ -1,4 +1,5 @@
 #include <math.h>
+#include <tchar.h>
 #include "sink_dsound.h"
 #include "../win32/winspk.h"
 
@@ -44,7 +45,7 @@ DSEnumProc(LPGUID lpGUID, LPCTSTR lpszDesc, LPCTSTR lpszDrvName, LPVOID lpContex
 {
 	if (lpGUID)
 	{
-		if (strstr(lpszDesc, "PDIF"))
+		if (_tcsstr(lpszDesc, TEXT("PDIF")))
 		{
 			*((LPCGUID*)lpContext) = lpGUID;
 			return FALSE;

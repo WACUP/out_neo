@@ -13,7 +13,7 @@ class Spectrum : public NullFilter
 {
 protected:
   unsigned  length;
-  FFT       fft;
+  MM_FFT       fft;
 
   SampleBuf data;
   Samples   spectrum;

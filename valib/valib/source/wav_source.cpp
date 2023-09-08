@@ -59,8 +59,7 @@ WAVSource::WAVSource(const char *_filename, size_t _block_size)
   open(_filename, _block_size);
 }
 
-bool 
-WAVSource::open(const char *_filename, size_t _block_size)
+bool WAVSource::open(const char *_filename, size_t _block_size)
 {
   close();
   f.open(_filename);
@@ -86,12 +85,10 @@ WAVSource::open(const char *_filename, size_t _block_size)
   return true;
 }
 
-bool 
-WAVSource::open_riff()
+bool WAVSource::open_riff()
 {
   /////////////////////////////////////////////////////////
   // Initializes spk, data_start and data_size
-
   const size_t buf_size = 256;
   uint8_t buf[buf_size];
   size_t buf_data;
@@ -103,7 +100,6 @@ WAVSource::open_riff()
 
   /////////////////////////////////////////////////////////
   // Check RIFF header
-
   f.seek(0);
   buf_data = f.read(buf, sizeof(RIFFChunk));
   if (buf_data < sizeof(RIFFChunk) ||
@@ -113,7 +109,6 @@ WAVSource::open_riff()
 
   /////////////////////////////////////////////////////////
   // Chunk walk
-
   bool have_fmt = false;
   bool have_ds64 = false;
   uint64_t data_size64 = 0;
@@ -127,7 +122,6 @@ WAVSource::open_riff()
 
     ///////////////////////////////////////////////////////
     // Format chunk
-
     if (header->fcc == fcc_fmt)
     {
       if (data_size + header->size > buf_size)
@@ -148,7 +142,6 @@ WAVSource::open_riff()
 
     ///////////////////////////////////////////////////////
     // ds64 chunk
-
     if (header->fcc == fcc_ds64)
     {
       buf_data += f.read(buf + buf_data, sizeof(DS64Chunk) - buf_data);
@@ -162,7 +155,6 @@ WAVSource::open_riff()
 
     ///////////////////////////////////////////////////////
     // Data chunk
-
     if (header->fcc == fcc_data)
     {
       if (!have_fmt)
@@ -197,28 +189,24 @@ WAVSource::close()
   f.close();
 }
 
-bool
-WAVSource::is_open() const
+bool WAVSource::is_open() const
 {
   return f.is_open();
 }
 
-AutoFile::fsize_t
-WAVSource::size() const
+AutoFile::fsize_t WAVSource::size() const
 {
   if (data_size > (uint64_t)AutoFile::max_size)
     return AutoFile::max_size;
   return (AutoFile::fsize_t) data_size;
 }
 
-AutoFile::fsize_t
-WAVSource::pos() const
+AutoFile::fsize_t WAVSource::pos() const
 {
   return f.pos() - data_start;
 }
 
-int
-WAVSource::seek(AutoFile::fsize_t _pos)
+int WAVSource::seek(AutoFile::fsize_t _pos)
 {
   if (_pos < 0) _pos = 0;
   if ((uint64_t)_pos > data_size) _pos = data_size;
@@ -230,21 +218,17 @@ WAVSource::seek(AutoFile::fsize_t _pos)
 
 ///////////////////////////////////////////////////////////
 // Source interface
-
-Speakers 
-WAVSource::get_output() const
+Speakers WAVSource::get_output() const
 {
   return spk;
 }
 
-bool 
-WAVSource::is_empty() const
+bool WAVSource::is_empty() const
 {
   return data_remains == 0;
 }
 
-bool
-WAVSource::get_chunk(Chunk *_chunk)
+bool WAVSource::get_chunk(Chunk *_chunk)
 {
   size_t len = block_size;
   if (data_remains < block_size)

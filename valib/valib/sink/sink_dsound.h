@@ -20,8 +20,10 @@
 #ifndef VALIB_SINK_DSOUND_H
 #define VALIB_SINK_DSOUND_H
 
-#include <dsound.h>
+#include <windows.h>
+#include <mmsystem.h>
 #include <mmreg.h>
+#include <dsound.h>
 #include <ks.h>
 #include <ksmedia.h>
 #include "../filter.h"

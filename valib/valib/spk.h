@@ -264,6 +264,7 @@ class Speakers
 public:
   int format;           // data format
   int mask;             // channel mask
+  int original_mask;    // input channel mask
   int sample_rate;      // sample rate
   int relation;         // interchannel relation
   sample_t level;       // 0dB level
@@ -273,12 +274,12 @@ public:
     set_unknown();
   };
 
-  Speakers(int _format, int _mask, int _sample_rate, sample_t _level = -1, int _relation = NO_RELATION)
+  Speakers(const int _format, const int _mask, const int _sample_rate, const sample_t _level = -1, const int _relation = NO_RELATION)
   {
     set(_format, _mask, _sample_rate, _level, _relation);
   }
 
-  inline void set(int format, int mask, int sample_rate, sample_t level = -1, int relation = NO_RELATION);
+  inline void set(const int format, const int mask, const int sample_rate, const sample_t level = -1, const int relation = NO_RELATION);
   inline void set_unknown();
 
   inline bool is_unknown() const;
@@ -366,10 +367,11 @@ inline const int *mask_order(int mask)
 
 
 inline void 
-Speakers::set(int _format, int _mask, int _sample_rate, sample_t _level, int _relation)
+Speakers::set(const int _format, const int _mask, const int _sample_rate, const sample_t _level, const int _relation)
 {
   format = _format;
   mask = _mask;
+  original_mask = _mask;
   sample_rate = _sample_rate;
   level = _level;
   if (level < 0) switch (format)
@@ -390,6 +392,7 @@ Speakers::set_unknown()
 {
   format = FORMAT_UNKNOWN;
   mask = 0;
+  original_mask = 0;
   sample_rate = 0;
   relation = NO_RELATION;
   level = 1.0;

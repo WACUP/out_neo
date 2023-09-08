@@ -4,40 +4,60 @@
 #include "out.h"
 #include "outMixer.h"
 #include "config\DevilConfig.h"
+#include "config\DevilConfig.h"
+#include <loader/loader/paths.h>
+#include <loader/loader/utils.h>
+#include <nu/servicebuilder.h>
+#include <loader/hook/get_api_service.h>
+#include <loader/hook/squash.h>
+#include <api/memmgr/api_memmgr.h>
+#include "resource.h"
+#include "../wacup_version.h"
+#include "config/tab.h"
 
-typedef Out_Module * ( * WINAMPGETOUTMODULE )();
+// {092E2E9A-A2C0-47b8-9712-D026AE485BEA}
+static const GUID OutNotSoNeoLangGUID =
+{ 0x92e2e9a, 0xa2c0, 0x47b8, { 0x97, 0x12, 0xd0, 0x26, 0xae, 0x48, 0x5b, 0xea } };
 
-HINSTANCE g_hMasterInstance = NULL; // extern
+// wasabi based services for localisation support
+api_service* WASABI_API_SVC = 0;
+api_memmgr* WASABI_API_MEMMGR = 0;
+api_application* WASABI_API_APP = 0;
+
+SETUP_API_LNG_VARS;
+
+prefsDlgRecW* output_prefs = NULL;
+
+extern "C" __declspec(dllexport) void __cdecl winampGetOutModeChange(const int mode);
+
 HINSTANCE g_hSlaveInstance = NULL;
 Out_Module *g_pModSlave = NULL;
 
 outMixer *g_pMixer = NULL;
-
-UINT_PTR hMainHandleTimer = 0;
+int g_loaded = 0;
 
 void Config( HWND p );
 void About( HWND p );
-void Init();
-void Quit();
-int Open( int sr, int nch, int bps, int bufferlenms, int prebufferms );
-void Close();
-int	Write( char * data, int size );
-int CanWrite();
-int IsPlaying();
-int Pause( int new_state );
-void SetVolume( int v );
-void SetPan( int p );
-void Flush( int pos );
-int GetWrittenTime();
-int GetOutputTime();
-
+void Init( void );
+void Quit( void );
+int Open( const int sr, const int nch, const int bps, const int len_ms, const int pre_len_ms );
+void Close( void );
+int	Write(const char * data, const int size );
+int CanWrite( void );
+int IsPlaying( void );
+int Pause(const int new_state );
+void SetVolume(const int v );
+void SetPan(const int p );
+void Flush( const int pos );
+int GetWrittenTime( void );
+int GetOutputTime( void );
 
 ////////////////////////////////////////////////////////////////////////////////
 //  g_OutModMaster
 ////////////////////////////////////////////////////////////////////////////////
 Out_Module g_OutModMaster = {
-	OUT_VER,			// int version
-	PLUGIN_NAME,		// char * description
+	OUT_VER_U,			// int version
+	(char *)PLUGIN_NAME,// char * description
 	PLUGIN_ID,			// int id
 	0,					// HWND hMainWindow
 	0,					// HINSTANCE hDllInstance
@@ -61,34 +81,63 @@ Out_Module g_OutModMaster = {
 ////////////////////////////////////////////////////////////////////////////////
 //  Init
 ////////////////////////////////////////////////////////////////////////////////
-void Init()
+void Init( void )
 {
-	g_pMixer = new outMixer();
-	g_pModSlave->Init();
+	WASABI_API_SVC = GetServiceAPIPtr();
+	if (WASABI_API_SVC != NULL)
+	{
+		ServiceBuild(WASABI_API_SVC, WASABI_API_LNG, languageApiGUID);
+		ServiceBuild(WASABI_API_SVC, WASABI_API_MEMMGR, memMgrApiServiceGuid);
+
+		// need to have this initialised before we try
+		// to do anything with localisation features
+		// TODO
+		WASABI_API_START_LANG(g_OutModMaster.hDllInstance, OutNotSoNeoLangGUID);
+
+		wchar_t szDescription[256] = { 0 };
+		StringCchPrintf(szDescription, ARRAYSIZE(szDescription),
+						WASABI_API_LNGSTRINGW(IDS_PLUGIN_NAME),
+						PLUGIN_VERSION);
+		g_OutModMaster.description = (char*)WASABI_API_MEMMGR->sysDupStr(szDescription);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //  Quit
 ////////////////////////////////////////////////////////////////////////////////
-void Quit()
+void Quit( void )
+{
+	if (g_pMixer)
 {
 	delete g_pMixer;
-
-	// In case Quit() is called right after Init()
-	// which can happen when Plainamp scans the plugin
-	// the timer is still running which means we are
-	// unloading the plugin although is still running.
-	// Bad idea so we have to stop the timer.
-	if( hMainHandleTimer )
-	{
-		KillTimer( NULL, hMainHandleTimer );
-		hMainHandleTimer = 0;
+		g_pMixer = NULL;
 	}
 
+	if (g_pModSlave)
+	{
+		void(__cdecl *changed)(const int) = (void(__cdecl *)(const int))GetProcAddress(g_hSlaveInstance, "winampGetOutModeChange");
+		if (changed)
+	{
+			changed(OUT_UNSET);
+	}
+
+		/*if (g_pModSlave->Quit)
+		{
 	g_pModSlave->Quit();
+		}*/
+
+		g_hSlaveInstance = NULL;
+		g_pModSlave = NULL;
+	}
 
 	// Unload DLL
-	FreeLibrary( g_hSlaveInstance );
+	// we're not going to do this & instead let it leak
+	// as there's still the possibility of the plug-in
+	// doing clean-up & this then mimics winamp / wacup
+	// to be safer on closing if playback was running &
+	// if we need to do proper dynamic unloading we can
+	// come back & change / improve this as is needed :)
+	//FreeLibrary( g_hSlaveInstance );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -96,147 +145,157 @@ void Quit()
 ////////////////////////////////////////////////////////////////////////////////
 void Config( HWND p )
 {
-	g_pMixer->Config( p );
+	// incase the user only goes to the
+	// config, this ensure we've setup
+	// correctly otherwise all crashes
+	winampGetOutModeChange(OUT_SET);
+
+	if (output_prefs != NULL)
+	{
+		OpenPrefsPage((WPARAM)output_prefs);
+	}
 }
 
 void About( HWND p )
 {
-	g_pMixer->About( p );
+	LPWSTR about_text = NULL;
+	DWORD data_size = 0;
+	unsigned char* data = (unsigned char*)WASABI_API_LOADRESFROMFILEW(L"GZ",
+						   MAKEINTRESOURCEW(IDR_ABOUT_TEXT_GZ), &data_size);
+	DecompressResource(data, data_size, (unsigned char**)&about_text, 0, true);
+
+	wchar_t message[1024] = { 0 }, title[128] = { 0 };
+	StringCchPrintf(message, ARRAYSIZE(message), about_text,
+					(LPWSTR)g_OutModMaster.description,
+					L"Darren Owen aka DrO", WACUP_COPYRIGHT,
+					TEXT(__DATE__));
+	AboutMessageBox(p, message, WASABI_API_LNGSTRINGW_BUF(IDS_ABOUT_TITLE,
+												title, ARRAYSIZE(title)));
+
+	if (about_text)
+	{
+		WASABI_API_MEMMGR->sysFree(about_text);
+	}
 }
 
-int Open( int sr, int nch, int bps, int len_ms, int pre_len_ms )
+int Open( const int sr, const int nch, const int bps, const int len_ms, const int pre_len_ms )
 {
-	return g_pMixer->Open( sr, nch, bps, len_ms, pre_len_ms );
+	return (g_pMixer ? g_pMixer->Open( sr, nch, bps, len_ms, pre_len_ms ) : -1);
 }
 
-void Close()
+void Close( void )
+{
+	if (g_pMixer)
 {
 	g_pMixer->Close();
 }
-
-int Write( char * data, int size )
-{
-	return g_pMixer->Write( data, size );
 }
 
-int CanWrite()
+int Write( const char * data, const int size )
 {
-	return g_pMixer->CanWrite();
+	return (g_pMixer ? g_pMixer->Write( data, size ) : 0);
 }
 
-int IsPlaying()
+int CanWrite( void )
 {
-	return g_pMixer->IsPlaying();
+	return (g_pMixer ? g_pMixer->CanWrite() : 0);
 }
 
-int Pause(int new_state)
+int IsPlaying( void )
 {
-	return g_pMixer->Pause( new_state );
+	return (g_pMixer ? g_pMixer->IsPlaying() : 0);
 }
 
-void SetVolume( int v )
+int Pause( const int new_state )
+{
+	return (g_pMixer ? g_pMixer->Pause( new_state ) : 0);
+}
+
+void SetVolume( const int v )
+{
+	if (g_pMixer)
 {
 	g_pMixer->SetVolume( v );
 }
+}
 
-void SetPan( int p )
+void SetPan( const int p )
+{
+	if (g_pMixer)
 {
 	g_pMixer->SetPan( p );
 }
-
-void Flush( int pos )
-{
-	g_pMixer->Flush( pos );
 }
 
-int GetWrittenTime()
+void Flush( const int pos )
 {
-	return g_pMixer->GetWrittenTime();
+	if (g_pMixer)
+{
+		g_pMixer->Flush(pos);
+}
 }
 
-int GetOutputTime()
-{
-	return g_pMixer->GetOutputTime();
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-//  GetCurrentModule
-////////////////////////////////////////////////////////////////////////////////
-HMODULE GetCurrentModule()
-{
-	MEMORY_BASIC_INFORMATION mbi;
-	static int dummy;
-	VirtualQuery( &dummy, &mbi, sizeof( MEMORY_BASIC_INFORMATION ) );
-	return ( HMODULE )mbi.AllocationBase;
-}
-
-//////////////////////////////////////////////////////////////////////////////// 
-//  MainHandleTimerProc
-//////////////////////////////////////////////////////////////////////////////// 
-VOID CALLBACK MainHandleTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
-{
-	static bool bStayOut = false;
-
-	if( bStayOut )
+int GetWrittenTime( void )
 	{
-		return;
+	return (g_pMixer ? g_pMixer->GetWrittenTime() : 0);
 	}
 	
-	if( g_OutModMaster.hMainWindow )
+int GetOutputTime( void )
 	{
-		bStayOut = true;
-
-		KillTimer( NULL, hMainHandleTimer );
-		hMainHandleTimer = 0;
-
-		g_pModSlave->hMainWindow = g_OutModMaster.hMainWindow;
-
-		bStayOut = false;
-	}
+	return (g_pMixer ? g_pMixer->GetOutputTime() : 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //  switchOutPutPlugin
 ////////////////////////////////////////////////////////////////////////////////
-bool switchOutPutPlugin(const char* path)
+bool switchOutPutPlugin(const TCHAR* path)
 {
-	if( hMainHandleTimer )
-	{
-		KillTimer( NULL, hMainHandleTimer );
-		hMainHandleTimer = 0;
-	}
+	if (!g_pMixer)
+		g_pMixer = new outMixer();
 
-	if ( g_pModSlave )
-		g_pModSlave->Quit();
+	/*if (g_pModSlave && g_pModSlave->Quit)
+		g_pModSlave->Quit();*/
 
 	// Unload DLL
 	if ( g_hSlaveInstance )
-		FreeLibrary( g_hSlaveInstance );
+	{
+		void(__cdecl *changed)(const int) = (void(__cdecl *)(const int))GetProcAddress(g_hSlaveInstance, "winampGetOutModeChange");
+		if (changed)
+		{
+			changed(OUT_UNSET);
+		}
+
+		//FreeLibrary( g_hSlaveInstance );
 	g_hSlaveInstance = NULL;
+	}
 	g_pModSlave = NULL;
 
-	// Load slave dll
-	g_hSlaveInstance = LoadLibrary( path );
+	// Load slave dll but check if it's already
+	// been loaded to avoid some duplicate bits
+	g_hSlaveInstance = GetOrLoadDll(path, NULL);
 	if( !g_hSlaveInstance )
 	{
+#if 0 // TODO
 		//_strlwr( walk );
-		char szBuffer[ 1000 ];
-		wsprintf(
+		TCHAR szBuffer[1000] = { 0 };
+		_tprintf(
 			szBuffer,
-			"Slave plugin could not be loaded: %s\n",
+			TEXT("Slave plugin could not be loaded: %s\n"),
 			path
 		);
-		MessageBox( NULL, szBuffer, "Slave plugin error", MB_ICONINFORMATION );
+		MessageBox( NULL, szBuffer, TEXT("Slave plugin error"), MB_ICONINFORMATION );
+#endif
 		return false;
 	}
+
+	HookPluginHelper(g_hSlaveInstance);
 
 	// Find export
 	WINAMPGETOUTMODULE winampGetOutModule =
 		( WINAMPGETOUTMODULE )GetProcAddress( g_hSlaveInstance, "winampGetOutModule" );
 	if( !winampGetOutModule )
 	{
-		FreeLibrary( g_hSlaveInstance );
+		//FreeLibrary( g_hSlaveInstance );
 		return false;
 	}
 
@@ -244,95 +303,201 @@ bool switchOutPutPlugin(const char* path)
 	g_pModSlave = winampGetOutModule();
 	if( !g_pModSlave )
 	{
-		FreeLibrary( g_hSlaveInstance );
+		//FreeLibrary( g_hSlaveInstance );
 		return false;
 	}
 
 	// Version mismatch?
-	if( g_pModSlave->version < OUT_VER )
+	if( ( g_pModSlave->version != OUT_VER ) && 
+		( g_pModSlave->version != OUT_VER_U ))
 	{
-		FreeLibrary( g_hSlaveInstance );
+		//FreeLibrary( g_hSlaveInstance );
 		return false;
 	}
 
 	// Modify slave
 	g_pModSlave->hDllInstance   = g_hSlaveInstance;
+	g_pModSlave->hMainWindow = g_OutModMaster.hMainWindow;
+	/*g_pModSlave->Init();
 
-	// Start main window detection
-	hMainHandleTimer = SetTimer( NULL, 0, 333, MainHandleTimerProc );
-
-	g_pModSlave->Init();
+	void(__cdecl *changed)(const int) = (void(__cdecl *)(const int))GetProcAddress(g_hSlaveInstance, "winampGetOutModeChange");
+	if (changed)
+	{
+		changed(OUT_SET);
+	}*/
 	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //  winampGetOutModule
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" __declspec( dllexport ) Out_Module * winampGetOutModule()
+extern "C" __declspec(dllexport) Out_Module * winampGetOutModule(void)
 {
-	g_hMasterInstance = ( HINSTANCE )GetCurrentModule();
-	g_OutModMaster.hDllInstance = g_hMasterInstance;
+	return &g_OutModMaster;
+}
 
-	// Get master path
-	char szFullpath[ MAX_PATH ] = "";
-	GetModuleFileName( g_hMasterInstance, szFullpath, MAX_PATH - 6 - 1 );
-	const int iFullLathLen = strlen( szFullpath );
+INT_PTR CALLBACK MixerConfigProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	TabDlg* dlg = NULL;
+	switch (uMsg)
+	{
+		case WM_INITDIALOG:
+		{
+			// incase the user only goes to the
+			// config, this ensure we've setup
+			// correctly otherwise all crashes
+			winampGetOutModeChange(OUT_SET);
 
-	// Get slave path
-	char * walk = szFullpath + iFullLathLen - 1; // Last char
-	while( ( walk > szFullpath ) && ( *walk != '\\' ) ) walk--;
-	walk++;
+			if (g_pMixer)
+			{
+				g_pMixer->Config(hwnd);
+			}
+			return 0;
+		}
+	}
 
-	DevilConfig *pConfig = new DevilConfig( g_hMasterInstance, "Winamp" );
-	char sPlugin[ MAX_PATH ] = "";
-	int a = MAX_PATH - (walk - szFullpath) - 1;
-	pConfig->Read("sOutputPlugin", walk, "out_ds.dll", a);
+	if (!dlg) dlg = (TabDlg*)GetWindowLongPtr(hwnd, DWLP_USER);
+	return (dlg ? dlg->message(hwnd, uMsg, wParam, lParam) : FALSE);
+}
+
+extern "C" __declspec(dllexport) BOOL __cdecl winampGetOutPrefs(prefsDlgRecW* prefs)
+{
+	// this is called when the preferences window is being created
+	// and is used for the delayed registering of a native prefs
+	// page to be placed as a child of the 'Output' node (why not)
+	if (prefs)
+	{
+		Init();
+
+		if (WASABI_API_LNG != NULL)
+		{
+			// need to have this initialised before we try
+			// to do anything with localisation features
+			// TODO
+			WASABI_API_START_LANG(g_OutModMaster.hDllInstance, OutNotSoNeoLangGUID);
+
+			// TODO localise
+			prefs->hInst = GetModuleHandle(GetPaths()->wacup_core_dll)/*WASABI_API_LNG_HINST*/;
+			prefs->dlgID = IDD_TABBED_PREFS_DIALOG;// IDD_CONFIG;
+			prefs->name = WASABI_API_LNGSTRINGW_DUP(IDS_PREFS_NAME);
+			prefs->proc = MixerConfigProc;
+			prefs->where = 9;
+			prefs->_id = 54;
+			output_prefs = prefs;
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+extern "C" __declspec(dllexport) void __cdecl winampGetOutModeChange(const int mode)
+{
+	// just look at the set / unset state
+	switch (mode & ~0xFF0)
+	{
+		case OUT_UNSET:
+		{
+			// we've been unloaded so we can 
+			// reset everything just in-case
+			break;
+		}
+		case OUT_SET:
+		{
+			// if we're not being used then there's no
+			// need to be loading anything until then
+			/*if ((WASABI_API_SVC == NULL) && (WASABI_API_LNG == NULL))
+			{
+				WASABI_API_SVC = GetServiceAPIPtr();
+				if (WASABI_API_SVC != NULL)
+				{
+					if (WASABI_API_LNG == NULL)
+					{
+						ServiceBuild(WASABI_API_SVC, WASABI_API_LNG, languageApiGUID);
+						WASABI_API_START_LANG(plugin.hDllInstance, OutNotSoNeoLangGUID);
+					}
+				}
+			}*/
+
+			if (!g_loaded)
+			{
+				g_loaded = 1;
+
+				if (!g_pMixer)
+					g_pMixer = new outMixer();
+
+				TCHAR szPluginName[256] = { 0 };
+				LPTSTR pszfilename = szPluginName;
+				DevilConfig *pConfig = new DevilConfig( g_OutModMaster.hDllInstance );
+				pConfig->Read(TEXT("sOutputPlugin"), szPluginName, TEXT("out_notsodirect.dll"));
 	delete pConfig;
 
-	// Load slave dll
-	g_hSlaveInstance = LoadLibrary( szFullpath );
+				Out_Module* out_plugin = (!szPluginName[0] ? GetUsableOutputPlugin(TRUE) : nullptr);
+				if (out_plugin && (g_OutModMaster.hDllInstance != out_plugin->hDllInstance))
+				{
+					GetModuleFileName(out_plugin->hDllInstance, szPluginName, ARRAYSIZE(szPluginName));
+					pszfilename = (LPWSTR)FindPathFileName(szPluginName);
+				}
+
+				// Load slave dll but check if it's already
+				// been loaded to avoid some duplicate bits
+				BOOL loaded = FALSE;
+				TCHAR szFullpath[MAX_PATH] = { 0 };
+				g_hSlaveInstance = GetOrLoadDll(CombinePath(szFullpath, GetPaths()->winamp_plugin_dir, pszfilename), &loaded);
 	if( !g_hSlaveInstance )
 	{
-		_strlwr( walk );
-		char szBuffer[ 1000 ];
-		wsprintf(
-			szBuffer,
-			"Slave plugin could not be loaded: %s\n",
-			walk
+					/*_tcslwr(szPluginName);
+					TCHAR szBuffer[1000] = { 0 };
+					StringCchPrintf(
+						szBuffer, ARRAYSIZE(szBuffer),
+						TEXT("Slave plugin could not be loaded: %s\n"),
+						szPluginName
 		);
-		MessageBox( NULL, szBuffer, "Slave plugin error", MB_ICONINFORMATION );
-		return NULL;
+					TimedMessageBox( NULL, szBuffer, TEXT("Slave plugin error"), MB_ICONINFORMATION, 5000 );*/
+					return;
 	}
+
+				HookPluginHelper(g_hSlaveInstance);
 
 	// Find export
 	WINAMPGETOUTMODULE winampGetOutModule =
 		( WINAMPGETOUTMODULE )GetProcAddress( g_hSlaveInstance, "winampGetOutModule" );
 	if( !winampGetOutModule )
 	{
-		FreeLibrary( g_hSlaveInstance );
-		return NULL;
+					//FreeLibrary( g_hSlaveInstance );
+					return;
 	}
 
 	// Get module
 	g_pModSlave = winampGetOutModule();
 	if( !g_pModSlave )
 	{
-		FreeLibrary( g_hSlaveInstance );
-		return NULL;
+					//FreeLibrary( g_hSlaveInstance );
+					return;
 	}
 
 	// Version mismatch?
 	if( g_pModSlave->version < OUT_VER )
 	{
-		FreeLibrary( g_hSlaveInstance );
-		return NULL;
+					//FreeLibrary( g_hSlaveInstance );
+					return;
 	}
 
 	// Modify slave
 	g_pModSlave->hDllInstance   = g_hSlaveInstance;
+				g_pModSlave->hMainWindow = g_OutModMaster.hMainWindow;
 
-	// Start main window detection
-	hMainHandleTimer = SetTimer( NULL, 0, 333, MainHandleTimerProc );
+				if (loaded && g_pModSlave->Init)
+				{
+					g_pModSlave->Init();
+				}
 
-	return &g_OutModMaster;
+				void(__cdecl *changed)(const int) = (void(__cdecl *)(const int))GetProcAddress(g_pModSlave->hDllInstance, "winampGetOutModeChange");
+				if (changed)
+				{
+					changed(mode);
+				}
+			}
+			break;
+		}
+}
 }

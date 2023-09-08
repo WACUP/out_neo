@@ -223,7 +223,7 @@ TabDlg::add_page(int i, TabSheet *sheet, char *title)
     i = page_count;
 
   pages[i] = sheet;
-  titles[i] = strdup(title);
+  titles[i] = _strdup(title);
   page_count++;
 }
 

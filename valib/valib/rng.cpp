@@ -1,5 +1,8 @@
 #include "vtime.h"
 #include "rng.h"
+#include <windows.h>
+#define WA_UTILS_SIMPLE
+#include <../../loader/loader/utils.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructors and asignment
@@ -42,7 +45,8 @@ RNG &
 RNG::randomize()
 {
   // todo: use more than just a time to randomize?
-  z = (uint32_t)(local_time() * 1000) & 0x7fffffff;
+  z = RandomFromRange(0x7fffffff)/*/
+  z = (uint32_t)(local_time() * 1000) & 0x7fffffff/**/;
   next();
   return *this;
 }

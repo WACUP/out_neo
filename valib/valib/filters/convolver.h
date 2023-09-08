@@ -26,7 +26,7 @@ protected:
   int n, c;
   int pos;
 
-  FFT       fft;
+  MM_FFT       fft;
   Samples   filter;
   SampleBuf buf;
   Samples   fft_buf;

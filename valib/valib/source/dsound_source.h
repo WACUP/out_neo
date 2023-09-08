@@ -16,7 +16,6 @@ protected:
   /////////////////////////////////////////////////////////
   // Parameters set by user and
   // directly determined from thoose
-
   Speakers  spk;
   DWORD     buf_size;
   size_t    buf_size_ms;
@@ -24,13 +23,11 @@ protected:
 
   /////////////////////////////////////////////////////////
   // DirectSound
-
   LPDIRECTSOUNDCAPTURE       ds_capture;
   LPDIRECTSOUNDCAPTUREBUFFER ds_buf;
 
   /////////////////////////////////////////////////////////
   // Processing variables
-
   Rawdata out_buf;
   bool    capturing;
   vtime_t time;
@@ -59,7 +56,6 @@ public:
 
   /////////////////////////////////////////////////////////
   // Source interface
-
   virtual Speakers get_output() const;
   virtual bool is_empty() const;
   virtual bool get_chunk(Chunk *chunk);

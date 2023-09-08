@@ -5,8 +5,10 @@
 #ifndef VALIB_DEFS_H
 #define VALIB_DEFS_H
 
-const char *valib_build_info();
-const char *valib_credits();
+#include <tchar.h>
+
+const TCHAR *valib_build_info();
+const TCHAR *valib_credits();
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -114,7 +116,7 @@ struct int24_t // int24_t is a low-endian structure
   uint16_t low;
   int8_t   high;
 
-  int24_t() {}
+  int24_t() : low(0), high(0) {}
   int24_t(int32_t i)
   {
     low  = uint16_t(i & 0xFFFF);

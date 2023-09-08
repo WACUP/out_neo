@@ -6,24 +6,18 @@
 #include "..\resource.h"
 #include "..\outMixer.h"
 
-#define array_size(array) (sizeof(array) / sizeof(array[0]))
-#define dlg_printf(dlg, ctrl, format, params)                     \
-{                                                                 \
-  char buf[255];                                                  \
-  sprintf(buf, format, ##params);                                 \
-  SendDlgItemMessage(dlg, ctrl, WM_SETTEXT, 0, (LONG)(LPSTR)buf); \
-}
-
 class ConfigDlg : public TabSheet
 {
 public:
-	static ConfigDlg *create_main   (HMODULE hmodule, outMixer *_outMixer);
-	static ConfigDlg *create_mixer  (HMODULE hmodule, outMixer *_outMixer);
-	static ConfigDlg *create_gains  (HMODULE hmodule, outMixer *_outMixer);
-	static ConfigDlg *create_spdif  (HMODULE hmodule, outMixer *_outMixer);
-	static ConfigDlg *create_about  (HMODULE hmodule, outMixer *_outMixer);
+	static ConfigDlg *create_main   (outMixer *_outMixer);
+	static ConfigDlg *create_mixer  (outMixer *_outMixer);
+	static ConfigDlg *create_gains  (outMixer *_outMixer);
+#ifdef USE_SPDIF
+	static ConfigDlg *create_spdif  (outMixer *_outMixer);
+#endif
+	//static ConfigDlg *create_about  (outMixer *_outMixer);
 
-	ConfigDlg(HMODULE hmodule, LPCSTR dlg_res, outMixer *_outMixer);
+	ConfigDlg(UINT dlg_res, outMixer *_outMixer);
 
 private:
 	outMixer		*m_outMixer;
@@ -37,8 +31,10 @@ private:
 	// GUI objects
 	///////////////////////////
 
+#ifdef LEGACY_CODE
 	// Interface
 	DoubleEdit	edt_refresh_time;
+#endif
 	// AGC
 	DoubleEdit	edt_attack;
 	DoubleEdit	edt_release;
@@ -60,10 +56,11 @@ private:
 	DoubleEdit	edt_bass_freq;
 	// Matrix
 	DoubleEdit	edt_matrix[NCHANNELS][NCHANNELS];
+#if 0
 	// About
 	LinkButton	lnk_home;
 	LinkButton	lnk_forum;
-
+#endif
 
 	///////////////////////////
 	// Values
@@ -73,11 +70,15 @@ private:
 	Speakers	old_in_spk;
 	Speakers	in_spk;
 	Speakers	out_spk;
+#ifdef USE_SPDIF
 	bool		use_spdif;
+#endif
 	// interface options
 	bool		invert_levels;
+#ifdef LEGACY_CODE
 	int			refresh_time;
-	char		old_info[4096];
+#endif
+	TCHAR old_info[4096];
 	// AGC options
 	bool		auto_gain;
 	bool		normalize;
@@ -115,6 +116,7 @@ private:
 	// Matrix
 	matrix_t	old_matrix;
 	matrix_t	matrix;
+#ifdef USE_SPDIF
 	// SPDIF
 	int			spdif_dts_mode;
 	int			spdif_dts_conv;
@@ -129,6 +131,7 @@ private:
 	bool		spdif_allow_32;
 	bool		spdif_query_sink;
 	bool		spdif_close_at_end;
+#endif
 
 	///////////////////////////
 	// Methods
@@ -136,7 +139,7 @@ private:
 	void switch_on();
 	void switch_off();
 	BOOL message(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	void set_cpu_usage();
+
 	void update();
 	void init_plugin_list();
 
@@ -146,10 +149,8 @@ private:
 	void update_dynamic_controls();
 	void update_matrix_controls();
 
-
 	/////////////////////////////////////////////////////////////////////////////
 	// Handle control notifications
-
 	void command(int control, int message);
 };
 

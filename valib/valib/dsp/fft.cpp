@@ -2,16 +2,16 @@
 #include "fft.h"
 #include "fftsg.h"
 
-FFT::FFT()
+MM_FFT::MM_FFT()
 {}
 
-FFT::FFT(unsigned length)
+MM_FFT::MM_FFT(unsigned length)
 {
   set_length(length);
 }
 
 bool
-FFT::set_length(unsigned length)
+MM_FFT::set_length(unsigned length)
 {
   if (len == length && is_ok())
     return true;
@@ -27,13 +27,13 @@ FFT::set_length(unsigned length)
 }
 
 void
-FFT::rdft(sample_t *samples)
+MM_FFT::rdft(sample_t *samples)
 {
   ::rdft(len, 1, samples, fft_ip, fft_w);
 }
 
 void
-FFT::inv_rdft(sample_t *samples)
+MM_FFT::inv_rdft(sample_t *samples)
 {
   ::rdft(len, -1, samples, fft_ip, fft_w);
 }

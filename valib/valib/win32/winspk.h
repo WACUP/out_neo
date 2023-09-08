@@ -11,6 +11,8 @@
 #include <windows.h>
 #include <ks.h>
 #include <ksmedia.h>
+#include <mmsystem.h>
+#include <mmreg.h>
 #else
 
 typedef struct

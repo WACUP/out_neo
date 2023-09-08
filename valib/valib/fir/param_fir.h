@@ -31,8 +31,8 @@ public:
   ParamFIR();
   ParamFIR(int type, double f1, double f2, double df, double a, bool norm = false);
 
-  void set(int  type, double  f1, double  f2, double  df, double  a, bool  norm = false);;
-  void get(int *type, double *f1, double *f2, double *df, double *a, bool *norm = 0);;
+  void set(int  type, double  f1, double  f2, double  df, double  a, bool  norm = false);
+  void get(int *type, double *f1, double *f2, double *df, double *a, bool *norm = 0);
 
   virtual int version() const;
   virtual const FIRInstance *make(int sample_rate) const;

@@ -23,23 +23,21 @@
 # define _WIN32_WINDOWS 0x0410
 #endif
 
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <tchar.h>
 
 #include <stdlib.h>
-
 
 class DevilConfig
 {
 private:
 	TCHAR * szIniPath;
 	TCHAR * szSection;
-	void Init( const TCHAR * szCopySection, HMODULE hMod, const TCHAR *szAppDataSection = NULL );
+	void Init( const TCHAR * szCopySection, HMODULE hMod );
 
 public:
-	DevilConfig( HMODULE hMod = NULL, const TCHAR *szAppDataSection = NULL );
-	DevilConfig( const TCHAR * szCopySection, HMODULE hMod = NULL, const TCHAR *szAppDataSection = NULL );
+	explicit DevilConfig( HMODULE hMod = NULL );
+	explicit DevilConfig( const TCHAR * szCopySection, HMODULE hMod = NULL );
 	DevilConfig( const TCHAR * szCopySection, const TCHAR * szFilename );
 	~DevilConfig();
 
@@ -51,10 +49,10 @@ public:
 	bool Read( const TCHAR * szKey, int * iOut, const int iDefault );
 	bool Read( const TCHAR * szKey, TCHAR * szOut, const TCHAR * szDefault, UINT uSize = 256 );
 
-	void CopyIniPath( TCHAR * szOut, UINT uSize = _MAX_PATH );
+#if 0
+	void CopyIniPath( TCHAR * szOut, UINT uSize = MAX_PATH );
 	TCHAR * GetIniPath() { return szIniPath; }
+#endif
 };
-
-
 
 #endif // DEVIL_CONFIG_H

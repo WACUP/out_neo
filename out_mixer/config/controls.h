@@ -48,6 +48,7 @@
 
 #define CB_ENTER (WM_USER+1)
 
+#if 0
 class Tooltip
 {
 protected:
@@ -79,6 +80,7 @@ public:
   void add_window(HWND window, const char *text);
   void add_control(int control_id, const char *text);
 };
+#endif
 
 class Edit
 {
@@ -94,7 +96,7 @@ protected:
   virtual void backup_value() = 0;
   virtual void restore_value() = 0;
   virtual void write_value() = 0;
-  virtual const char *incorrect_value() { return "Incorrect value"; }
+	virtual const TCHAR *incorrect_value() { return TEXT("Incorrect value"); }
 
 public:
   Edit(): dlg(0), hwnd(0), item(0), wndproc(0), editing(false) {};
@@ -114,11 +116,11 @@ protected:
   void backup_value();
   void restore_value();
   void write_value();
-  const char *incorrect_value() { return "Incorrect value: must be number"; }
+	const TCHAR *incorrect_value() { return TEXT("Incorrect value: must be number"); }
 
 public:
   double value;
-  DoubleEdit() {};
+	DoubleEdit() : old_value(0), value(0) {};
 
   void update_value(double _value) { value = _value; write_value(); };
 };
@@ -127,8 +129,8 @@ class TextEdit : public Edit
 {
 protected:
   size_t size;
-  char *old_value;
-  char *value;
+	TCHAR *old_value;
+	TCHAR *value;
 
   bool read_value();
   void backup_value();
@@ -139,10 +141,11 @@ public:
   TextEdit(size_t size = 256);
   ~TextEdit();
 
-  void set_text(const char *text);
-  const char *get_text() { return value; };
+	void set_text(const TCHAR *text);
+	const TCHAR *get_text() { return value; };
 };
 
+#if 0
 class LinkButton
 {
 protected:
@@ -164,40 +167,6 @@ public:
   virtual void paint(HDC dc);
   virtual void press();
 };
-
-/*
-class Slider
-{
-public:
-  Slider();
-  ~Slider();
-
-
-  void link(HWND dlg, int item);
-  void unlink();
-};
-*/
-
-/*
-class ComboBox
-{
-protected:
-  static LRESULT CALLBACK SubClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-  HWND    dlg;
-  HWND    hwnd;
-  int     item;
-  WNDPROC wndproc;
-
-
-public:
-  COMBOBOXINFO info;
-  ComboBox(): dlg(0), hwnd(0), item(0), wndproc(0) {};
-  ~ComboBox();
-
-  void link(HWND dlg, int item);
-  void unlink();
-};
-*/
-
+#endif
 
 #endif

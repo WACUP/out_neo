@@ -62,7 +62,7 @@ SynthBufferFPU::synth(sample_t samples[32])
     
     {
       int i;
-      register sample_t tmp;
+      sample_t tmp;
       sample_t p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15;
       sample_t pp0,pp1,pp2,pp3,pp4,pp5,pp6,pp7,pp8,pp9,pp10,pp11,pp12,pp13,pp14,pp15;
       

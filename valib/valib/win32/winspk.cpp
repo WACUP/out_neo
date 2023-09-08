@@ -136,6 +136,7 @@ spk2wfx(Speakers spk, WAVEFORMATEX *wfx, bool use_extensible)
     case FORMAT_AC3:
     case FORMAT_DTS:
     case FORMAT_MPA:
+		{
       switch (spk.format)
       {
         case FORMAT_AC3: wfx->wFormatTag = WAVE_FORMAT_AVI_AC3; break;
@@ -151,8 +152,9 @@ spk2wfx(Speakers spk, WAVEFORMATEX *wfx, bool use_extensible)
       wfx->nAvgBytesPerSec = 0;
       wfx->cbSize = 0;
       break;
-
+		}
     case FORMAT_PCM16:
+		{
       wfx->wFormatTag = WAVE_FORMAT_PCM;
       wfx->nChannels = nchannels;
       wfx->nSamplesPerSec = spk.sample_rate;
@@ -171,8 +173,9 @@ spk2wfx(Speakers spk, WAVEFORMATEX *wfx, bool use_extensible)
         ext->dwChannelMask = ds_channels_tbl[spk.mask];
       }
       break;
-
+		}
     case FORMAT_PCM24:
+		{
       wfx->wFormatTag = WAVE_FORMAT_PCM;
       wfx->nChannels = nchannels;
       wfx->nSamplesPerSec = spk.sample_rate;
@@ -191,8 +194,9 @@ spk2wfx(Speakers spk, WAVEFORMATEX *wfx, bool use_extensible)
         ext->dwChannelMask = ds_channels_tbl[spk.mask];
       }
       break;
-
+		}
     case FORMAT_PCM32:
+		{
       wfx->wFormatTag = WAVE_FORMAT_PCM;
       wfx->nChannels = nchannels;
       wfx->nSamplesPerSec = spk.sample_rate;
@@ -211,8 +215,9 @@ spk2wfx(Speakers spk, WAVEFORMATEX *wfx, bool use_extensible)
         ext->dwChannelMask = ds_channels_tbl[spk.mask];
       }
       break;
-
+		}
     case FORMAT_PCMFLOAT:
+		{
       wfx->wFormatTag = WAVE_FORMAT_IEEE_FLOAT;
       wfx->nChannels = nchannels;
       wfx->nSamplesPerSec = spk.sample_rate;
@@ -231,8 +236,9 @@ spk2wfx(Speakers spk, WAVEFORMATEX *wfx, bool use_extensible)
         ext->dwChannelMask = ds_channels_tbl[spk.mask];
       }
       break;
-
+		}
     case FORMAT_PCMDOUBLE:
+		{
       wfx->wFormatTag = WAVE_FORMAT_IEEE_FLOAT;
       wfx->nChannels = nchannels;
       wfx->nSamplesPerSec = spk.sample_rate;
@@ -251,17 +257,18 @@ spk2wfx(Speakers spk, WAVEFORMATEX *wfx, bool use_extensible)
         ext->dwChannelMask = ds_channels_tbl[spk.mask];
       }
       break;
-
+		}
     default:
+		{
       // unknown format
       return false;
   }
+	}
 
   return true;
 };
 
-bool
-wfx2spk(WAVEFORMATEX *wfx, Speakers &spk)
+bool wfx2spk(WAVEFORMATEX *wfx, Speakers &spk)
 {
   int format, mask;
   WAVEFORMATEXTENSIBLE *wfex = 0;
@@ -318,6 +325,7 @@ wfx2spk(WAVEFORMATEX *wfx, Speakers &spk)
     switch (wfx->wFormatTag)
     {
       case WAVE_FORMAT_IEEE_FLOAT:
+			{
         switch (wfx->wBitsPerSample)
         {
           case 32: format = FORMAT_PCMFLOAT;  break;
@@ -325,8 +333,9 @@ wfx2spk(WAVEFORMATEX *wfx, Speakers &spk)
           default: return false;
         }
         break;
-
+			}
       case WAVE_FORMAT_PCM:
+			{
         switch (wfx->wBitsPerSample)
         {
           case 16: format = FORMAT_PCM16; break;
@@ -335,26 +344,32 @@ wfx2spk(WAVEFORMATEX *wfx, Speakers &spk)
           default: return false;
         }
         break;
-
+			}
       case WAVE_FORMAT_AVI_AC3:
+			{
         format = FORMAT_AC3;
         break;
-
+			}
       case WAVE_FORMAT_AVI_DTS:
+			{
         format = FORMAT_DTS;
         break;
-
+			}
       case WAVE_FORMAT_MPEG:
+			{
         format = FORMAT_MPA;
         break;
-
+			}
       default:
+			{
         return false;
     }
+		}
 
     // determine audio mode
     mask = 0;
     if (FORMAT_MASK(format) & FORMAT_CLASS_PCM)
+		{
       switch (wfx->nChannels)
       {
         case 1: mask = MODE_MONO;   break;
@@ -366,6 +381,7 @@ wfx2spk(WAVEFORMATEX *wfx, Speakers &spk)
         default: return false;
       }
   }
+	}
 
   spk = Speakers(format, mask, wfx->nSamplesPerSec);
   return true;
@@ -373,7 +389,7 @@ wfx2spk(WAVEFORMATEX *wfx, Speakers &spk)
 
 bool is_compatible(Speakers _spk, WAVEFORMATEX *_wfx)
 {
-  WAVEFORMATEXTENSIBLE wfx_tmp;
+	WAVEFORMATEXTENSIBLE wfx_tmp = {0};
 
   if (!spk2wfx(_spk, (WAVEFORMATEX *)&wfx_tmp, true)) 
     return false;

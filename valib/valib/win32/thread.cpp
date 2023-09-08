@@ -14,8 +14,7 @@ Thread::~Thread()
     terminate(0);
 }
 
-DWORD WINAPI 
-Thread::ThreadProc(LPVOID param)
+DWORD WINAPI Thread::ThreadProc(LPVOID param)
 {
   if (param)
   {
@@ -28,8 +27,7 @@ Thread::ThreadProc(LPVOID param)
   return 0;
 }
 
-bool
-Thread::create(bool suspended)
+bool Thread::create(bool suspended)
 {
   if (f_thread)
     terminate(0);
@@ -41,22 +39,19 @@ Thread::create(bool suspended)
   return f_thread != 0;
 }
 
-void
-Thread::suspend()
+void Thread::suspend()
 {
   if (f_thread && SuspendThread(f_thread) != -1)
     f_suspended = true;
 }
 
-void
-Thread::resume()
+void Thread::resume()
 {
   if (f_thread && ResumeThread(f_thread) != -1)
     f_suspended = false;
 }
 
-void 
-Thread::terminate(int timeout_ms, DWORD exit_code)
+void Thread::terminate(int timeout_ms, DWORD exit_code)
 {
   if (!f_thread) return;
 
@@ -74,5 +69,4 @@ Thread::terminate(int timeout_ms, DWORD exit_code)
     CloseHandle(f_thread);
     f_thread = 0;
   }
-  return;
 }

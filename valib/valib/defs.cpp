@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <windows.h>
 #include "defs.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,15 +48,16 @@ matrix_t::operator !=(const matrix_t &m) const
 ///////////////////////////////////////////////////////////////////////////////
 // Build info
 
-static char info_str[1024];
+static TCHAR info_str[1024];
 
-const char *valib_build_info()
+const TCHAR *valib_build_info()
 {
+#if 0 // TODO
   static bool init = false;
   if (!init)
   {
     int ptr = 0;
-    ptr += sprintf(info_str + ptr, "Compiler: "
+    ptr += _tprintf(info_str + ptr, "Compiler: "
     #if defined(_MSC_VER)
       "MSVC %i\n", _MSC_VER);
     #elif defined(__GNUC__)
@@ -65,43 +66,43 @@ const char *valib_build_info()
       "Unknown%s\n",
     #endif
 
-    ptr += sprintf(info_str + ptr, "Debug/Release: "
+    ptr += _tprintf(info_str + ptr, "Debug/Release: "
     #ifdef _DEBUG
       "Debug\n");
     #else
       "Release\n");
     #endif
 
-    ptr += sprintf(info_str + ptr, "Build date: " __DATE__ " " __TIME__"\n");
-    ptr += sprintf(info_str + ptr, "Number of channels: %i\n", NCHANNELS);
-    ptr += sprintf(info_str + ptr, "Sample format: "
+    ptr += _tprintf(info_str + ptr, "Build date: " __DATE__ " " __TIME__"\n");
+    ptr += _tprintf(info_str + ptr, "Number of channels: %i\n", NCHANNELS);
+    ptr += _tprintf(info_str + ptr, "Sample format: "
     #ifdef FLOAT_SAMPLE
       "float\n");
     #else
       "double\n");
     #endif
-    ptr += sprintf(info_str + ptr, "Sample size: %i\n", sizeof(sample_t));
+    ptr += _tprintf(info_str + ptr, "Sample size: %i\n", sizeof(sample_t));
     init = true;
   }
-
+#endif
   return info_str;
 }
 
-const char *valib_credits()
+const TCHAR *valib_credits()
 {
   return
-    "libca (former libdts) - DTS decoder library\n"
-    "http://developers.videolan.org/libdca.html\n"
-    "\n"
-    "ffmpeg - AC3 encoder\n"
-    "http://ffmpeg.mplayerhq.hu\n"
-    "\n"
-    "FFT and Bessel code by Takuya OOURA\n"
-    "http://www.kurims.kyoto-u.ac.jp/~ooura\n"
-    "\n"
-    "muxman - DVD authoring\n"
-    "http://www.mpucoder.com/Muxman\n"
-    "\n"
-    "Media Player Classic - best media player\n"
-    "http://sourceforge.net/projects/guliverkli\n";
+    TEXT("libca (former libdts) - DTS decoder library\n")
+	  TEXT("http://developers.videolan.org/libdca.html\n")
+	  TEXT("\n")
+	  TEXT("ffmpeg - AC3 encoder\n")
+	  TEXT("http://ffmpeg.mplayerhq.hu\n")
+	  TEXT("\n")
+	  TEXT("FFT and Bessel code by Takuya OOURA\n")
+	  TEXT("http://www.kurims.kyoto-u.ac.jp/~ooura\n")
+	  TEXT("\n")
+	  TEXT("muxman - DVD authoring\n")
+	  TEXT("http://www.mpucoder.com/Muxman\n")
+	  TEXT("\n")
+	  TEXT("Media Player Classic - best media player\n")
+	  TEXT("http://sourceforge.net/projects/guliverkli\n");
 }

@@ -49,15 +49,19 @@ public:
 class DVDGraph : public FilterGraph
 {
 public:
+#ifdef USE_SPDIF
   Demux          demux;
   Detector       detector;
   Despdifer      despdifer;
   Spdifer        spdifer_pt;
+#endif
   AudioDecoder   dec;
   AudioProcessor proc;
+#ifdef USE_SPDIF
   AC3Enc         enc;
   Spdifer        spdifer_enc;
   Spdif2PCM      spdif2pcm;
+#endif
   Syncer         syncer;
 
 public:

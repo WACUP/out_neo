@@ -20,24 +20,24 @@ void outDsound::About(HWND hwndParent)
 {
 }
 
-int outDsound::Open(Speakers spk, int bufferlenms, int prebufferms)
+int outDsound::Open(Speakers spk, const int bufferlenms, const int prebufferms)
 {
 	if (m_dsound.get_buffer_size() == 0)
 		m_dsound.open(Speakers(FORMAT_SPDIF, MODE_STEREO, 48000));
-	return 2000;
+	return 1;
 }
 
-void outDsound::Close()
+void outDsound::Close(void)
 {
 	m_dsound.stop();
 }
 
-void outDsound::Reset()
+void outDsound::Reset(void)
 {
 	m_dsound.close();
 }
 
-int outDsound::Write(char *buf, int len)
+int outDsound::Write(const char *buf, const int len)
 {
 	m_chunk.set_rawdata(m_dsound.get_input(), (uint8_t*)buf, len);
 	if (!m_chunk.is_dummy() && !m_chunk.is_empty())
@@ -45,17 +45,17 @@ int outDsound::Write(char *buf, int len)
 	return 0;
 }
 
-int outDsound::CanWrite()
+int outDsound::CanWrite(void)
 {
-	return m_dsound.get_buffer_size() - m_dsound.get_data_size();
+	return (int)(m_dsound.get_buffer_size() - m_dsound.get_data_size());
 }
 
-int outDsound::IsPlaying()
+int outDsound::IsPlaying(void)
 {
 	return 0;
 }
 
-int outDsound::Pause(int pause)
+int outDsound::Pause(const int pause)
 {
 	bool was_paused = m_dsound.is_paused();
 	if (pause)
@@ -65,7 +65,7 @@ int outDsound::Pause(int pause)
 	return was_paused;
 }
 
-void outDsound::SetVolume(int volume)
+void outDsound::SetVolume(const int volume)
 {
 	//m_volume = volume == -666 ? m_volume : volume;
 	//if (m_volume == 0)
@@ -74,7 +74,7 @@ void outDsound::SetVolume(int volume)
 	//	m_dsound.set_vol(20*log10(m_volume/255.0));
 }
 
-void outDsound::SetPan(int pan)
+void outDsound::SetPan(const int pan)
 {
 	//if (pan == -128)
 	//	m_dsound.set_pan(-100);
@@ -84,17 +84,17 @@ void outDsound::SetPan(int pan)
 	//	m_dsound.set_pan( (pan<0?1:-1) * 20*log10(1-abs(pan)/128.0));
 }
 
-void outDsound::Flush(int t)
+void outDsound::Flush(const int t)
 {
 	m_dsound.stop();
 }
 
-int outDsound::GetOutputTime()
+int outDsound::GetOutputTime(void)
 {
 	return (int)(1000 * m_dsound.get_playback_time());
 }
 
-int outDsound::GetWrittenTime()
+int outDsound::GetWrittenTime(void)
 {
 	return (int)(1000 * m_dsound.get_written_time());
 }

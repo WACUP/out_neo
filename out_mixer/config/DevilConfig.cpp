@@ -17,19 +17,18 @@
 #include "DevilConfig.h"
 #include <stdio.h>
 #include <shlobj.h>
-
+#include <shlwapi.h>
+#include <loader/loader/paths.h>
 
 // Don't warn on int->bool
 #pragma warning( disable : 4800 )
 
-
 // *****************************************************************************
-void DevilConfig::Init( const TCHAR * szCopySection, HMODULE hMod, const TCHAR *szAppDataSection )
+void DevilConfig::Init( const TCHAR * szCopySection, HMODULE hMod )
 {
 	// Save section name
 	szSection = new TCHAR[ _tcslen( szCopySection ) + 1 ];
 	_tcscpy( szSection, szCopySection );
-
 
 	/*
 
@@ -39,17 +38,16 @@ void DevilConfig::Init( const TCHAR * szCopySection, HMODULE hMod, const TCHAR *
 
 	*/
 
+	szIniPath = new TCHAR[ MAX_PATH ];
 
-	szIniPath = new TCHAR[ _MAX_PATH ];
-
-
-	TCHAR szFull[ _MAX_PATH ] = TEXT( "" );
+#if 0
+	TCHAR szFull[ MAX_PATH ] = TEXT( "" );
 	TCHAR szDrive[ _MAX_DRIVE	] = TEXT( "" );
 	TCHAR szDir[ _MAX_DIR	] = TEXT( "" );
 
 
 	// Get our filename
-	GetModuleFileName( hMod, szFull, _MAX_PATH );
+	GetModuleFileName( hMod, szFull, MAX_PATH );
 
 
 	// Split it up
@@ -80,47 +78,49 @@ void DevilConfig::Init( const TCHAR * szCopySection, HMODULE hMod, const TCHAR *
 
 	// Copy full filename
 	if (szAppDataSection == NULL)
-		_sntprintf( szIniPath, _MAX_PATH, TEXT( "%s%s%s" ), szDrive, szDir, fd.cFileName );
+		_sntprintf( szIniPath, MAX_PATH, TEXT( "%s%s%s" ), szDrive, szDir, fd.cFileName );
 	else
 	{
 		SHGetSpecialFolderPath(0, szFull, CSIDL_APPDATA, FALSE);
-		_sntprintf( szIniPath, _MAX_PATH, TEXT( "%s\\%s\\%s" ), szFull, szAppDataSection, fd.cFileName );
+		_sntprintf( szIniPath, MAX_PATH, TEXT( "%s\\%s\\%s" ), szFull, szAppDataSection, fd.cFileName );
 	}
+#else
+	// TODO provide a non-WACUP implementation for doing this...
+#ifdef _UNICODE
+	CombinePath(szIniPath, GetPaths()->settings_dir, TEXT("out_mixer.ini"));
+#else
+	PathCombine(szIniPath, GetPaths()->settings_dir_83, TEXT("out_mixer.ini"));
+#endif
+#endif
 }
-
-
 
 // *****************************************************************************
-DevilConfig::DevilConfig( HMODULE hMod, const TCHAR *szAppDataSection )
+DevilConfig::DevilConfig( HMODULE hMod )
 {
-	Init( TEXT( "Config" ), hMod, szAppDataSection );
+	Init( TEXT( "Config" ), hMod );
 }
-
-
 
 // *****************************************************************************
-DevilConfig::DevilConfig( const TCHAR * szCopySection, HMODULE hMod, const TCHAR *szAppDataSection )
+DevilConfig::DevilConfig( const TCHAR * szCopySection, HMODULE hMod )
 {
-	Init( szCopySection, hMod, szAppDataSection );
+	Init( szCopySection, hMod );
 }
-
-
 
 // *****************************************************************************
 DevilConfig::DevilConfig( const TCHAR * szCopySection, const TCHAR * szFilename )
 {
+#if 0
 	const UINT uFilenameLen = _tcslen( szFilename );
 	szIniPath = new TCHAR[ uFilenameLen + 1 ];
 	memcpy( szIniPath, szFilename, uFilenameLen * sizeof( TCHAR ) );
 	szIniPath[ uFilenameLen ] = TEXT( '\0' );
+#endif
 	
-	const UINT uSectionLen = _tcslen( szCopySection );
+	const size_t uSectionLen = _tcslen( szCopySection );
 	szSection = new TCHAR[ uSectionLen + 1 ];
 	memcpy( szSection, szCopySection, uSectionLen * sizeof( TCHAR ) );
 	szSection[ uSectionLen ] = TEXT( '\0' );
 }
-
-
 
 // *****************************************************************************
 DevilConfig::~DevilConfig()
@@ -129,13 +129,12 @@ DevilConfig::~DevilConfig()
 	{
 		delete [] szIniPath;
 	}
+
 	if( NULL != szSection )
 	{
 		delete [] szSection;
 	}
 }
-
-
 
 // *****************************************************************************
 bool DevilConfig::Write( const TCHAR * szKey, const double fValue )
@@ -145,8 +144,6 @@ bool DevilConfig::Write( const TCHAR * szKey, const double fValue )
 	return ( bool )WritePrivateProfileString( szSection, szKey, szText, szIniPath );
 }
 
-
-
 // *****************************************************************************
 bool DevilConfig::Write( const TCHAR * szKey, const int iValue )
 {
@@ -155,15 +152,11 @@ bool DevilConfig::Write( const TCHAR * szKey, const int iValue )
 	return ( bool )WritePrivateProfileString( szSection, szKey, szNumber, szIniPath );
 }
 
-
-
 // *****************************************************************************
 bool DevilConfig::Write( const TCHAR * szKey, const TCHAR * szText )
 {
 	return ( bool )WritePrivateProfileString( szSection, szKey, szText, szIniPath );
 }
-
-
 
 // *****************************************************************************
 bool DevilConfig::Read( const TCHAR * szKey, double * fOut, const double fDefault )
@@ -180,8 +173,6 @@ bool DevilConfig::Read( const TCHAR * szKey, double * fOut, const double fDefaul
 	return res;
 }
 
-
-
 // *****************************************************************************
 bool DevilConfig::Read( const TCHAR * szKey, int * iOut, const int iDefault )
 {
@@ -189,18 +180,16 @@ bool DevilConfig::Read( const TCHAR * szKey, int * iOut, const int iDefault )
 	return true;
 }
 
-
-
 // *****************************************************************************
 bool DevilConfig::Read( const TCHAR * szKey, TCHAR * szOut, const TCHAR * szDefault, UINT uSize )
 {
 	return ( bool )GetPrivateProfileString( szSection, szKey, szDefault, szOut, uSize, szIniPath );
 }
 
-
-
+#if 0
 // *****************************************************************************
 void DevilConfig::CopyIniPath( TCHAR * szOut, UINT uSize )
 {
 	_tcsncpy( szOut, szIniPath, uSize );
 }
+#endif

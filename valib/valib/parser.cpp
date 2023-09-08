@@ -27,14 +27,14 @@ HeaderParser::header_info(const uint8_t *hdr, char *buf, size_t size) const
     }
 
     if (h.frame_size)
-      info_size += sprintf(info + info_size, "Frame size: %i\n", h.frame_size);
+      info_size += sprintf(info + info_size, "Frame size: %zi\n", h.frame_size);
     else
       info_size += sprintf(info + info_size, "Frame size: free format\n");
 
-    info_size += sprintf(info + info_size, "Samples: %i\n", h.nsamples);
+    info_size += sprintf(info + info_size, "Samples: %zi\n", h.nsamples);
 
     if (h.frame_size > 0 && h.nsamples > 0)
-      info_size += sprintf(info + info_size, "Bitrate: %ikbps\n", h.frame_size * h.spk.sample_rate * 8 / h.nsamples / 1000);
+      info_size += sprintf(info + info_size, "Bitrate: %ikbps\n", (int)(h.frame_size * h.spk.sample_rate * 8 / h.nsamples / 1000));
     else
       info_size += sprintf(info + info_size, "Bitrate: unknown\n");
 
@@ -517,9 +517,9 @@ StreamBuffer::stream_info(char *buf, size_t size) const
     if (in_sync)
     {
       info_size += parser->header_info(frame, info, sizeof(info));
-      info_size += sprintf(info + info_size, "Frame interval: %i\n", frame_interval);
+      info_size += sprintf(info + info_size, "Frame interval: %zi\n", frame_interval);
       if (frame_interval > 0 && hinfo.nsamples > 0)
-        info_size += sprintf(info + info_size, "Actual bitrate: %ikbps\n", frame_interval * hinfo.spk.sample_rate * 8 / hinfo.nsamples / 1000);
+        info_size += sprintf(info + info_size, "Actual bitrate: %ikbps\n", (int)(frame_interval * hinfo.spk.sample_rate * 8 / hinfo.nsamples / 1000));
     }
     else
       info_size += sprintf(info + info_size, "Out of sync");

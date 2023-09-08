@@ -20,8 +20,7 @@ protected:
 public:
   typedef AutoFile::fsize_t fsize_t;
 
-  RAWSource()
-  {}
+	RAWSource() {}
  
   RAWSource(Speakers _spk, const char *_filename, size_t _block_size = 65536)
   { open (_spk, _filename, _block_size); }
@@ -31,7 +30,6 @@ public:
 
   /////////////////////////////////////////////////////////
   // FileSource interface
-
   bool open(Speakers _spk, const char *_filename, size_t _block_size = 65536);
   bool open(Speakers _spk, FILE *_f, size_t _block_size = 65536);
   void close();
@@ -46,11 +44,9 @@ public:
 
   /////////////////////////////////////////////////////////
   // Source interface
-
   virtual Speakers get_output() const  { return spk;               }
   virtual bool is_empty() const        { return !f.is_open() || f.eof(); }
   virtual bool get_chunk(Chunk *chunk);
-
 };
 
 #endif

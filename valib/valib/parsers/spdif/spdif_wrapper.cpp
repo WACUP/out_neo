@@ -283,7 +283,7 @@ SPDIFWrapper::stream_info(char *buf, size_t size) const
       "Output format: %s %s %iHz\n"
       "SPDIF format: %s\n"
       "Bitstream: %s\n"
-      "Frame size: %i\n",
+      "Frame size: %zi\n",
       spk.format_text(), spk.mode_text(), spk.sample_rate,
       use_header? "wrapped": "padded",
       bitstream,

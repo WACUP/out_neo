@@ -17,18 +17,21 @@ class AudioDecoder : public Filter
 {
 protected:
   ParserFilter parser;
-
+#ifdef USE_SPDIF
   MPAParser mpa;
   AC3Parser ac3;
   DTSParser dts;
   MultiFrame multi_parser;
+#endif
 
 public:
   AudioDecoder()
   {
+#ifdef USE_SPDIF
     FrameParser *parsers[] = { &ac3, &dts, &mpa };
     multi_parser.set_parsers(parsers, array_size(parsers));
     parser.set_parser(&multi_parser);
+#endif
   }
 
   int        get_frames()                    const { return parser.get_frames();       }

@@ -105,7 +105,7 @@ MPAParser::stream_info(char *buf, size_t size) const
     "MPEG Audio\n"
     "speakers: %s\n"
     "ver: %s\n"
-    "frame size: %i bytes\n"
+    "frame size: %zi bytes\n"
     "stream: %s\n"
     "bitrate: %ikbps\n"
     "sample rate: %iHz\n"

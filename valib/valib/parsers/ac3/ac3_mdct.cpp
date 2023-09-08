@@ -79,7 +79,7 @@ void MDCT::fft(IComplex *z, int ln)
 {
   int j, l, np, np2;
   int nblocks, nloops;
-  register IComplex *p,*q;
+  IComplex *p,*q;
   int tmp_re, tmp_im;
   
   np = 1 << ln;

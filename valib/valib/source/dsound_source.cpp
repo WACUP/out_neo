@@ -1,5 +1,7 @@
-#include <dsound.h>
+#include <windows.h>
+#include <mmsystem.h>
 #include <mmreg.h>
+#include <dsound.h>
 #include <ks.h>
 #include <ksmedia.h>
 #include "dsound_source.h"
@@ -24,8 +26,7 @@ DSoundSource::~DSoundSource()
     close();
 }
 
-void 
-DSoundSource::zero_all()
+void DSoundSource::zero_all()
 {
   spk         = spk_unknown;
   buf_size    = 0;
@@ -40,13 +41,11 @@ DSoundSource::zero_all()
   time        = 0;
 }
 
-bool
-DSoundSource::open(Speakers _spk, size_t _buf_size_ms, LPCGUID _device)
+bool DSoundSource::open(Speakers _spk, size_t _buf_size_ms, LPCGUID _device)
 {
   spk = _spk;
 
-  WAVEFORMATEXTENSIBLE wfx;
-  memset(&wfx, 0, sizeof(wfx));
+	WAVEFORMATEXTENSIBLE wfx = {0};
 
   if (spk2wfx(_spk, (WAVEFORMATEX*)(&wfx), true))
     if (open((WAVEFORMATEX*)(&wfx), _buf_size_ms, _device))
@@ -60,16 +59,14 @@ DSoundSource::open(Speakers _spk, size_t _buf_size_ms, LPCGUID _device)
   return false;
 }
 
-bool
-DSoundSource::open(WAVEFORMATEX *wf, size_t _buf_size_ms, LPCGUID _device)
+bool DSoundSource::open(WAVEFORMATEX *wf, size_t _buf_size_ms, LPCGUID _device)
 {
   buf_size_ms = _buf_size_ms;
   buf_size = DWORD(wf->nBlockAlign * wf->nSamplesPerSec * buf_size_ms / 1000);
   bytes2time = 1.0 / wf->nAvgBytesPerSec;
 
   // DirectSound buffer description
-  DSCBUFFERDESC dscbd;
-  memset(&dscbd, 0, sizeof(dscbd));
+	DSCBUFFERDESC dscbd = {0};
   dscbd.dwSize        = sizeof(dscbd);
   dscbd.dwBufferBytes = buf_size;
   dscbd.lpwfxFormat   = wf;
@@ -98,8 +95,7 @@ DSoundSource::open(WAVEFORMATEX *wf, size_t _buf_size_ms, LPCGUID _device)
   return true;
 }
 
-void
-DSoundSource::close()
+void DSoundSource::close()
 {
   if (ds_buf)
   {
@@ -113,21 +109,17 @@ DSoundSource::close()
   zero_all();
 }
 
-bool
-DSoundSource::is_open() const
+bool DSoundSource::is_open() const
 {
   return ds_buf != 0;
 }
 
-
-bool
-DSoundSource::is_started() const
+bool DSoundSource::is_started() const
 {
   return capturing;
 }
 
-bool 
-DSoundSource::start()
+bool DSoundSource::start()
 {
   if (!ds_buf) return false;
 
@@ -138,8 +130,7 @@ DSoundSource::start()
   return capturing;
 }
 
-void 
-DSoundSource::stop()
+void DSoundSource::stop()
 {
   if (!ds_buf) return;
 
@@ -147,8 +138,7 @@ DSoundSource::stop()
   capturing = false;
 }
 
-size_t 
-DSoundSource::captured_size() const
+size_t DSoundSource::captured_size() const
 {
   if (!ds_buf) return 0;
   DWORD read_cur;
@@ -162,23 +152,19 @@ DSoundSource::captured_size() const
     return read_cur + buf_size - cur;
 }
 
-vtime_t
-DSoundSource::captured_time() const
+vtime_t DSoundSource::captured_time() const
 {
   return captured_size() * bytes2time;
 }
 
-Speakers
-DSoundSource::get_output() const
+Speakers DSoundSource::get_output() const
 {
   return spk;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Source interface
-
-bool
-DSoundSource::is_empty() const
+bool DSoundSource::is_empty() const
 {
   if (chunk_size_ms)
     return captured_time() * 1000 < chunk_size_ms;
@@ -186,8 +172,7 @@ DSoundSource::is_empty() const
     return ds_buf != 0;
 }
 
-bool 
-DSoundSource::get_chunk(Chunk *_chunk)
+bool DSoundSource::get_chunk(Chunk *_chunk)
 {
   if (!ds_buf) return false;
 

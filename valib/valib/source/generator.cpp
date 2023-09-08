@@ -16,8 +16,7 @@ Generator::Generator(Speakers _spk, uint64_t _stream_len, size_t _chunk_size)
   init(_spk, _stream_len, _chunk_size);
 }
 
-bool 
-Generator::init(Speakers _spk, uint64_t _stream_len, size_t _chunk_size)
+bool Generator::init(Speakers _spk, uint64_t _stream_len, size_t _chunk_size)
 {
   spk = spk_unknown;
   stream_len = 0;
@@ -49,21 +48,17 @@ Generator::init(Speakers _spk, uint64_t _stream_len, size_t _chunk_size)
 }
 
 // Source interface
-
-Speakers 
-Generator::get_output() const
+Speakers Generator::get_output() const
 {
   return spk;
 }
 
-bool 
-Generator::is_empty() const
+bool Generator::is_empty() const
 {
   return stream_len <= 0;
 }
 
-bool 
-Generator::get_chunk(Chunk *_chunk)
+bool Generator::get_chunk(Chunk *_chunk)
 {
   bool eos = false;
   size_t n = chunk_size;
@@ -94,16 +89,13 @@ Generator::get_chunk(Chunk *_chunk)
 ///////////////////////////////////////////////////////////////////////////////
 // ZeroGen
 // Silence generator
-
-void
-ZeroGen::gen_samples(samples_t samples, size_t n)
+void ZeroGen::gen_samples(samples_t samples, size_t n)
 {
   for (int ch = 0; ch < spk.nch(); ch++)
     memset(samples[ch], 0, n * sizeof(sample_t));
 }
 
-void
-ZeroGen::gen_rawdata(uint8_t *rawdata, size_t n)
+void ZeroGen::gen_rawdata(uint8_t *rawdata, size_t n)
 {
   memset(rawdata, 0, n);
 }
@@ -111,23 +103,20 @@ ZeroGen::gen_rawdata(uint8_t *rawdata, size_t n)
 ///////////////////////////////////////////////////////////////////////////////
 // NoiseGen
 // Noise generator
-
-bool
-NoiseGen::init(Speakers _spk, int _seed, uint64_t _stream_len, size_t _chunk_size)
+bool NoiseGen::init(Speakers _spk, int _seed, uint64_t _stream_len, size_t _chunk_size)
 {
   rng.seed(_seed);
   return Generator::init(_spk, _stream_len, _chunk_size);
 }
-void
-NoiseGen::gen_samples(samples_t samples, size_t n)
+
+void NoiseGen::gen_samples(samples_t samples, size_t n)
 {
   for (size_t i = 0; i < n; i++)
     for (int ch = 0; ch < spk.nch(); ch++)
       samples[ch][i] = rng.get_sample();
 }
 
-void
-NoiseGen::gen_rawdata(uint8_t *rawdata, size_t n)
+void NoiseGen::gen_rawdata(uint8_t *rawdata, size_t n)
 {
   rng.fill_raw(rawdata, n);
 }
@@ -135,22 +124,19 @@ NoiseGen::gen_rawdata(uint8_t *rawdata, size_t n)
 ///////////////////////////////////////////////////////////////////////////////
 // ToneGen
 // Tone generator
-
-bool
-ToneGen::query_spk(Speakers _spk) const
+bool ToneGen::query_spk(Speakers _spk) const
 {
   return _spk.format == FORMAT_LINEAR;
 }
 
-bool
-ToneGen::init(Speakers _spk, int _freq, double _phase, uint64_t _stream_len, size_t _chunk_size)
+bool ToneGen::init(Speakers _spk, int _freq, double _phase, uint64_t _stream_len, size_t _chunk_size)
 {
   phase = _phase;
   freq = _freq;
   return Generator::init(_spk, _stream_len, _chunk_size);
 }
-void
-ToneGen::gen_samples(samples_t samples, size_t n)
+
+void ToneGen::gen_samples(samples_t samples, size_t n)
 {
   double w = 2 * M_PI * double(freq) / double(spk.sample_rate);
   for (size_t i = 0; i < n; i++)
@@ -161,8 +147,7 @@ ToneGen::gen_samples(samples_t samples, size_t n)
     memcpy(samples[ch], samples[0], n * sizeof(sample_t));
 }
 
-void
-ToneGen::gen_rawdata(uint8_t *rawdata, size_t n)
+void ToneGen::gen_rawdata(uint8_t *rawdata, size_t n)
 {
   // never be here
   assert(false);
@@ -171,22 +156,19 @@ ToneGen::gen_rawdata(uint8_t *rawdata, size_t n)
 ///////////////////////////////////////////////////////////////////////////////
 // LineGen
 // Line generator
-
-bool
-LineGen::query_spk(Speakers _spk) const
+bool LineGen::query_spk(Speakers _spk) const
 {
   return _spk.format == FORMAT_LINEAR;
 }
 
-bool
-LineGen::init(Speakers _spk, double _start, double _k, uint64_t _stream_len, size_t _chunk_size)
+bool LineGen::init(Speakers _spk, double _start, double _k, uint64_t _stream_len, size_t _chunk_size)
 {
   phase = _start;
   k = _k;
   return Generator::init(_spk, _stream_len, _chunk_size);
 }
-void
-LineGen::gen_samples(samples_t samples, size_t n)
+
+void LineGen::gen_samples(samples_t samples, size_t n)
 {
   for (size_t i = 0; i < n; i++)
     samples[0][i] = phase + i*k;
@@ -196,8 +178,7 @@ LineGen::gen_samples(samples_t samples, size_t n)
     memcpy(samples[ch], samples[0], n * sizeof(sample_t));
 }
 
-void
-LineGen::gen_rawdata(uint8_t *rawdata, size_t n)
+void LineGen::gen_rawdata(uint8_t *rawdata, size_t n)
 {
   // never be here
   assert(false);

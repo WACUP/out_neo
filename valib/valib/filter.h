@@ -166,7 +166,9 @@ public:
     sync(false),
     time(0),
     eos(false)
-  {}
+  {
+    samples.zero();
+  }
 
   Chunk(Speakers _spk, 
     bool _sync = false, vtime_t _time = 0, bool _eos  = false)
@@ -639,6 +641,8 @@ public:
   NullFilter(int _format_mask) 
   {
     spk  = spk_unknown;
+    rawdata = 0;
+    samples.zero();
     size = 0;
     time = 0;
     sync = false;

@@ -1,8 +1,11 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by out_mixer.rc
+// Used by out_neo.rc
 //
-#define IDB_LOGO                        101
+#define IDS_ABOUT_TEXT                  1
+#define IDS_ABOUT_TITLE                 2
+#define IDS_PREFS_NAME                  3
+#define IDR_ABOUT_TEXT_GZ               4
 #define IDD_MAIN                        102
 #define IDD_MIXER                       103
 #define IDD_GAINS                       104
@@ -19,7 +22,6 @@
 #define IDC_CMB_OUTPUT                  50004
 #define IDC_CMB_RATE                    50005
 #define IDC_GRP_DECODER_INFO            50301
-#define IDC_LBL_INPUT                   50302
 #define IDC_EDT_INFO                    50303
 #define IDC_LBL_FRAMES_ERRORS           50304
 #define IDC_EDT_FRAMES                  50305
@@ -67,9 +69,6 @@
 #define IDC_EDT_LFE                     50533
 #define IDC_EDT_VOICE                   50534
 #define IDC_EDT_SUR                     50535
-#define IDC_GRP_CPU                     50601
-#define IDC_CPU                         50602
-#define IDC_CPU_LABEL                   50603
 #define IDC_GRP_AGC                     50701
 #define IDC_CHK_AUTO_GAIN               50702
 #define IDC_CHK_NORMALIZE               50703
@@ -224,12 +223,13 @@
 #define IDC_GRP_CREDITS                 52810
 #define IDC_EDT_CREDITS                 52811
 #define IDC_VER                         52901
+#define IDS_PLUGIN_NAME                 65534
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        102
+#define _APS_NEXT_RESOURCE_VALUE        105
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101

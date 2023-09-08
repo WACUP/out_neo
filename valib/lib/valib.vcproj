@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="valib"
 	ProjectGUID="{30FCD216-1CAD-48FD-BF4B-337572F7EC9C}"
 	RootNamespace="valib"
@@ -999,14 +999,6 @@
 			Name="win32"
 			>
 			<File
-				RelativePath="..\valib\win32\cpu.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\valib\win32\cpu.h"
-				>
-			</File>
-			<File
 				RelativePath="..\valib\win32\thread.cpp"
 				>
 			</File>
@@ -1023,10 +1015,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\filters.cd"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

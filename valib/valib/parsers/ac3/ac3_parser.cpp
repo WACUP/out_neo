@@ -132,7 +132,7 @@ AC3Parser::stream_info(char *buf, size_t size) const
     "sample rate: %iHz\n"
     "bitrate: %ikbps\n"
     "stream: %s\n"
-    "frame size: %i bytes\n"
+    "frame size: %zi bytes\n"
     "nsamples: %i\n"
     "bsid: %i\n"
     "clev: %.1fdB (%.4f)\n"

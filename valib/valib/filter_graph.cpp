@@ -506,7 +506,7 @@ FilterChain::add_front(Filter *_filter, const char *_desc)
   }
 
   chain[0] = _filter;
-  desc[0] = strdup(_desc);
+  desc[0] = _strdup(_desc);
   chain_size++;
   return true;
 }
@@ -518,7 +518,7 @@ FilterChain::add_back(Filter *_filter, const char *_desc)
     return false;
 
   chain[chain_size] = _filter;
-  desc[chain_size] = strdup(_desc);
+  desc[chain_size] = _strdup(_desc);
   chain_size++;
   return true;
 }

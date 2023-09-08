@@ -245,8 +245,8 @@ DTSParser::stream_info(char *buf, size_t size) const
     "sample rate: %iHz\n"
     "bitrate: %ikbps\n"
     "stream: %s\n"
-    "frame size: %i bytes\n"
-    "nsamples: %i\n"
+    "frame size: %zi bytes\n"
+    "nsamples: %zi\n"
     "amode: %i\n"
     "%s"
     "\0",

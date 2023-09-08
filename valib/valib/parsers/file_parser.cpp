@@ -71,7 +71,7 @@ FileParser::open(const char *_filename, const HeaderParser *_parser, size_t _max
     return false;
 
   max_scan = _max_scan;
-  filename = strdup(_filename);
+  filename = _strdup(_filename);
 
   reset();
   return true;
