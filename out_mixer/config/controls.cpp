@@ -272,7 +272,7 @@ LRESULT CALLBACK Edit::SubClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 bool DoubleEdit::read_value()
 {
-	char buf[256] = {0};
+	TCHAR buf[256] = {0};
 
 	if (!SendDlgItemMessage(dlg, item, WM_GETTEXT, ARRAYSIZE(buf), (LPARAM)buf))
   {
@@ -281,8 +281,8 @@ bool DoubleEdit::read_value()
   }
 
   double new_value = 0.0;
-  char tmp;
-  if (sscanf(buf, "%lg%c", &new_value, &tmp) != 1)
+	TCHAR tmp;
+	if (_stscanf(buf, TEXT("%lg%c"), &new_value, &tmp) != 1)
     return false;
 
   value = new_value;
