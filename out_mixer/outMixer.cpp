@@ -531,9 +531,11 @@ int outMixer::Write(const char *buf, const int len)
 	// Chgt de mode de lecture s'il a changé
 	if (m_outputchanged)
 	{
+		const int written = this->GetOutputTime();
 		this->Flush(0);
 		this->Close();
 		this->Open(m_in_spk.sample_rate, spk2nch(m_in_spk), spk2bps(m_in_spk), 0, 0);
+		this->Flush(written);
 		m_outputchanged = false;
 	}
 
