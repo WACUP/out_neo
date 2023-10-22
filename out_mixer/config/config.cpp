@@ -333,9 +333,9 @@ void ConfigDlg::update()
 
 Out_Module* get_out_plugin(LPCWSTR file_name)
 {
-	WINAMPGETOUTMODULE winampGetOutModule = (WINAMPGETOUTMODULE)GetProcAddress(
+	WINAMPGETOUTMODULE winampGetOutModule = ((file_name != (LPCWSTR)CB_ERR) ? (WINAMPGETOUTMODULE)GetProcAddress(
 											GetDllHandle(GetPaths()->winamp_plugin_dir,
-											   file_name, NULL), "winampGetOutModule");
+																	  file_name, NULL), "winampGetOutModule") : 0);
 	return (winampGetOutModule ? winampGetOutModule() : NULL);
 }
 
