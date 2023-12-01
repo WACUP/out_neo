@@ -200,7 +200,7 @@ EqFIR::make(int sample_rate) const
     {
       step.calc(bands[i], bands[i+1], q, min_g, sample_rate);
       double alpha = kaiser_alpha(step.a);
-      for (int j = -step.c; j <= step.c; j++)
+      for (j = -step.c; j <= step.c; j++)
         data[max_c + j] += step.dg * lpf(j, step.cf) * kaiser_window(j, step.n, alpha);
     }
 

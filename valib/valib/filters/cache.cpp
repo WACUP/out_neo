@@ -116,7 +116,7 @@ CacheFilter::get_samples(int ch_name, vtime_t time, sample_t *samples, size_t si
     // Sum channels
     memcpy(samples, buf[0] + start_pos, size1 * sizeof(sample_t));
     memcpy(samples + size1, buf[0], size2 * sizeof(sample_t));
-    for (int ch = 1; ch < nch; ch++)
+    for (ch = 1; ch < nch; ch++)
     {
       for (i = 0; i < size1; i++)
         samples[i] += buf[ch][i + start_pos];

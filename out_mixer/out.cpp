@@ -89,16 +89,9 @@ void Init( void )
 		ServiceBuild(WASABI_API_SVC, WASABI_API_LNG, languageApiGUID);
 		ServiceBuild(WASABI_API_SVC, WASABI_API_MEMMGR, memMgrApiServiceGuid);
 
-		// need to have this initialised before we try
-		// to do anything with localisation features
-		// TODO
-		WASABI_API_START_LANG(g_OutModMaster.hDllInstance, OutNotSoNeoLangGUID);
-
-		wchar_t szDescription[256] = { 0 };
-		StringCchPrintf(szDescription, ARRAYSIZE(szDescription),
-						WASABI_API_LNGSTRINGW(IDS_PLUGIN_NAME),
-						PLUGIN_VERSION);
-		g_OutModMaster.description = (char*)WASABI_API_MEMMGR->sysDupStr(szDescription);
+		WASABI_API_START_LANG_DESC(WASABI_API_LNG, g_OutModMaster.hDllInstance,
+								   OutNotSoNeoLangGUID, IDS_PLUGIN_NAME,
+								   PLUGIN_VERSION, &g_OutModMaster.description);
 	}
 }
 

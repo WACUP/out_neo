@@ -20,8 +20,11 @@ DWORD WINAPI Thread::ThreadProc(LPVOID param)
   {
     Thread *thread = (Thread *)param;
     DWORD exit_code = thread->process();
+		if (thread->f_thread)
+		{
     CloseHandle(thread->f_thread);
     thread->f_thread = 0;
+		}
     return exit_code;
   }
   return 0;
@@ -66,7 +69,11 @@ void Thread::terminate(int timeout_ms, DWORD exit_code)
   if (f_thread)
   {
     TerminateThread(f_thread, exit_code);
+
+		if (f_thread)
+		{
     CloseHandle(f_thread);
     f_thread = 0;
   }
+	}
 }

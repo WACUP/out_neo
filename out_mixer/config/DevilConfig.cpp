@@ -140,7 +140,7 @@ DevilConfig::~DevilConfig()
 bool DevilConfig::Write( const TCHAR * szKey, const double fValue )
 {
 	TCHAR szText[ 50 ] = TEXT( "" );
-	_stprintf( szText, TEXT( "%.16f" ), fValue );
+	_stprintf_s( szText, ARRAYSIZE( szText ), TEXT( "%.16f" ), fValue );
 	return ( bool )WritePrivateProfileString( szSection, szKey, szText, szIniPath );
 }
 
@@ -148,7 +148,7 @@ bool DevilConfig::Write( const TCHAR * szKey, const double fValue )
 bool DevilConfig::Write( const TCHAR * szKey, const int iValue )
 {
 	TCHAR szNumber[ 12 ] = TEXT( "" );
-	_stprintf( szNumber, TEXT( "%i" ), iValue );
+	_stprintf_s( szNumber, ARRAYSIZE( szNumber ), TEXT( "%i" ), iValue );
 	return ( bool )WritePrivateProfileString( szSection, szKey, szNumber, szIniPath );
 }
 
@@ -162,7 +162,7 @@ bool DevilConfig::Write( const TCHAR * szKey, const TCHAR * szText )
 bool DevilConfig::Read( const TCHAR * szKey, double * fOut, const double fDefault )
 {
 	TCHAR szDefault[ 50 ] = TEXT( "" );
-	_stprintf( szDefault, TEXT( "%.16f" ), fDefault );
+	_stprintf_s( szDefault, ARRAYSIZE( szDefault ), TEXT( "%.16f" ), fDefault );
 
 	TCHAR szOut[ 50 ] = TEXT( "" );
 	bool res = ( bool )GetPrivateProfileString( szSection, szKey, szDefault, szOut, 20, szIniPath );
