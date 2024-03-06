@@ -176,7 +176,7 @@ protected:
     state_spdif_enc, 
     state_spdif2pcm,
     state_dejitter
-  };            
+  };
 
 
   /////////////////////////////////////////////////////////////////////////////

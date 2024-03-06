@@ -32,14 +32,14 @@ outMixer::~outMixer(void)
 
 	if (m_pOutPlugin)
 	{
-	delete m_pOutPlugin;
+		delete m_pOutPlugin;
 		m_pOutPlugin = NULL;
 	}
 
 #ifdef USE_SPDIF
 	if (m_pOutDsound)
 	{
-	delete m_pOutDsound;
+		delete m_pOutDsound;
 		m_pOutDsound = NULL;
 	}
 #endif
@@ -56,7 +56,7 @@ void outMixer::ReadConfig()
 	double dRes;
 	sample_t input_gains[NCHANNELS];
 	sample_t output_gains[NCHANNELS];
-	float    delays[NCHANNELS];
+	float delays[NCHANNELS];
 	matrix_t matrix;
 
 	// Output
@@ -287,7 +287,7 @@ void outMixer::WriteConfig()
 
 	sample_t input_gains[NCHANNELS];
 	sample_t output_gains[NCHANNELS];
-	float    delays[NCHANNELS];
+	float delays[NCHANNELS];
 	matrix_t matrix;
 
 	m_dvd_graph.proc.get_input_gains(input_gains);
@@ -433,14 +433,14 @@ void outMixer::Config(HWND hwndParent)
 #ifdef USE_SPDIF
 		dlg->add_page(3, ConfigDlg::create_spdif(this), TEXT("SPDIF"));
 #endif
-	//dlg.add_page(4, ConfigDlg::create_about(this), TEXT("About"));
-	// TODO reload with the previous selection
-	int page = 0;
-	m_pConfig->Read(TEXT("iLastPrefs"), &page, 0);
+		//dlg.add_page(4, ConfigDlg::create_about(this), TEXT("About"));
+		// TODO reload with the previous selection
+		int page = 0;
+		m_pConfig->Read(TEXT("iLastPrefs"), &page, 0);
 		dlg->switch_to(page);
 		dlg->exec();
-	//m_pOut->Config(hwndParent);
-}
+		//m_pOut->Config(hwndParent);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -452,7 +452,7 @@ int outMixer::Open(int samplerate, int numchannels, int bitspersamp, int bufferl
 	TCHAR szFullpath[MAX_PATH] = { 0 }, *pszFullpath = 0;
 	if (g_pModSlave && g_pModSlave->hDllInstance)
 	{
-	GetModuleFileName( g_pModSlave->hDllInstance, szFullpath, MAX_PATH - 6 - 1 );
+		GetModuleFileName(g_pModSlave->hDllInstance, szFullpath, MAX_PATH - 6 - 1);
 		pszFullpath = (LPWSTR)FindPathFileName(szFullpath);
 	}
 
@@ -511,8 +511,8 @@ int outMixer::Open(int samplerate, int numchannels, int bitspersamp, int bufferl
 void outMixer::Close(void)
 {
 	if (m_pOut)
-{
-	m_pOut->Close();
+	{
+		m_pOut->Close();
 	}
 
 #ifdef USE_SPDIF
@@ -584,25 +584,25 @@ int outMixer::Pause(const int pause)
 void outMixer::SetVolume(const int volume)
 {
 	if (m_pOut)
-{
-	m_pOut->SetVolume(volume);
-}
+	{
+		m_pOut->SetVolume(volume);
+	}
 }
 
 void outMixer::SetPan(const int pan)
 {
 	if (m_pOut)
-{
-	m_pOut->SetPan(pan);
-}
+	{
+		m_pOut->SetPan(pan);
+	}
 }
 
 void outMixer::Flush(const int t)
 {
 	if (m_pOut)
-{
-	m_pOut->Flush(t);
-}
+	{
+		m_pOut->Flush(t);
+	}
 }
 
 int outMixer::GetOutputTime(void)
@@ -630,13 +630,13 @@ void outMixer::ChangeOutput(const int ispk, const int ifmt, const int rate)
 
 	switch (ispk)
 	{
-		case  0: mask = m_in_spk.mask; break;
-		case  1: mask = MODE_1_0; break;
-		case  2: mask = MODE_2_0; break;
-		case  3: mask = MODE_3_0; break;
-		case  4: mask = MODE_2_2; break;
-		case  5: mask = MODE_3_1 | CH_MASK_LFE; break;
-		case  6: mask = MODE_3_2 | CH_MASK_LFE; break;
+		case 0: mask = m_in_spk.mask; break;
+		case 1: mask = MODE_1_0; break;
+		case 2: mask = MODE_2_0; break;
+		case 3: mask = MODE_3_0; break;
+		case 4: mask = MODE_2_2; break;
+		case 5: mask = MODE_3_1 | CH_MASK_LFE; break;
+		case 6: mask = MODE_3_2 | CH_MASK_LFE; break;
 		case 7: mask = MODE_STEREO; relation = RELATION_DOLBY; break;
 		case 8: mask = MODE_STEREO; relation = RELATION_DOLBY2; break;
 	}

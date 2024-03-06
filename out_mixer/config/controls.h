@@ -52,94 +52,94 @@
 class Tooltip
 {
 protected:
-  HWND hwnd;
-  HWND tooltip;
-  HINSTANCE hinstance;
+	HWND hwnd;
+	HWND tooltip;
+	HINSTANCE hinstance;
 
-  POINT mouse_pt;
-  __int64 mouse_time;
+	POINT mouse_pt;
+	__int64 mouse_time;
 
-  bool enabled;
-  bool visible;
-  int  delay;
+	bool enabled;
+	bool visible;
+	int delay;
 
-  void show(bool show);
+	void show(bool show);
 
 public:
-  Tooltip();
-  ~Tooltip();
+	Tooltip();
+	~Tooltip();
 
-  bool create(HINSTANCE _hinstance, HWND _hwnd, bool enabled = true);
-  void destroy();
-  void track();
+	bool create(HINSTANCE _hinstance, HWND _hwnd, bool enabled = true);
+	void destroy();
+	void track();
 
-  void enable(bool enabled);
-  void set_width(int width);
-  void set_delay(int ms);
+	void enable(bool enabled);
+	void set_width(int width);
+	void set_delay(int ms);
 
-  void add_window(HWND window, const char *text);
-  void add_control(int control_id, const char *text);
+	void add_window(HWND window, const char *text);
+	void add_control(int control_id, const char *text);
 };
 #endif
 
 class Edit
 {
 protected:
-  static LRESULT CALLBACK SubClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-  HWND    dlg;
-  HWND    hwnd;
-  int     item;
-  WNDPROC wndproc;
-  bool    editing;
+	static LRESULT CALLBACK SubClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	HWND dlg;
+	HWND hwnd;
+	int item;
+	WNDPROC wndproc;
+	bool editing;
 
-  virtual bool read_value() = 0;
-  virtual void backup_value() = 0;
-  virtual void restore_value() = 0;
-  virtual void write_value() = 0;
+	virtual bool read_value() = 0;
+	virtual void backup_value() = 0;
+	virtual void restore_value() = 0;
+	virtual void write_value() = 0;
 	virtual const TCHAR *incorrect_value() { return TEXT("Incorrect value"); }
 
 public:
-  Edit(): dlg(0), hwnd(0), item(0), wndproc(0), editing(false) {};
-  ~Edit();
+	Edit(): dlg(0), hwnd(0), item(0), wndproc(0), editing(false) {};
+	~Edit();
 
-  void link(HWND dlg, int item);
-  void unlink();
-  void enable(bool enabled);
+	void link(HWND dlg, int item);
+	void unlink();
+	void enable(bool enabled);
 };
 
 class DoubleEdit : public Edit
 {
 protected:
-  double old_value;
+	double old_value;
 
-  bool read_value();
-  void backup_value();
-  void restore_value();
-  void write_value();
-	const TCHAR *incorrect_value() { return TEXT("Incorrect value: must be number"); }
+	bool read_value();
+	void backup_value();
+	void restore_value();
+	void write_value();
+	const TCHAR* incorrect_value() { return TEXT("Incorrect value: must be number"); }
 
 public:
-  double value;
+	double value;
 	DoubleEdit() : old_value(0), value(0) {};
 
-  void update_value(double _value) { value = _value; write_value(); };
+	void update_value(double _value) { value = _value; write_value(); };
 };
 
 class TextEdit : public Edit
 {
 protected:
-  size_t size;
+	size_t size;
 	TCHAR *old_value;
 	TCHAR *value;
 
-  bool read_value();
-  void backup_value();
-  void restore_value();
-  void write_value();
+	bool read_value();
+	void backup_value();
+	void restore_value();
+	void write_value();
 
 public:
-  TextEdit(size_t size = 256);
-  ~TextEdit();
+	TextEdit(size_t size = 256);
+	~TextEdit();
 
 	void set_text(const TCHAR *text);
 	const TCHAR *get_text() { return value; };
@@ -149,23 +149,23 @@ public:
 class LinkButton
 {
 protected:
-  HWND    dlg;
-  HWND    hwnd;
-  int     item;
-  WNDPROC wndproc;
-  HFONT   font;
+	HWND dlg;
+	HWND hwnd;
+	int item;
+	WNDPROC wndproc;
+	HFONT font;
 
-  static LRESULT CALLBACK SubClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK SubClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 public:
-  LinkButton(): dlg(0), hwnd(0), item(0), wndproc(0) {};
-  ~LinkButton();
+	LinkButton(): dlg(0), hwnd(0), item(0), wndproc(0) {};
+	~LinkButton();
 
-  void link(HWND dlg, int item);
-  void unlink();  
+	void link(HWND dlg, int item);
+	void unlink();  
 
-  virtual void paint(HDC dc);
-  virtual void press();
+	virtual void paint(HDC dc);
+	virtual void press();
 };
 #endif
 

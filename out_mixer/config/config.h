@@ -20,12 +20,12 @@ public:
 	ConfigDlg(UINT dlg_res, outMixer *_outMixer);
 
 private:
-	outMixer		*m_outMixer;
-	DVDGraph		*m_dvd_graph;
-	AudioProcessor	*m_proc;
+	outMixer *m_outMixer;
+	DVDGraph *m_dvd_graph;
+	AudioProcessor *m_proc;
 
-	bool		m_visible;
-	bool		m_refresh;
+	bool m_visible;
+	bool m_refresh;
 
 	///////////////////////////
 	// GUI objects
@@ -33,33 +33,33 @@ private:
 
 #ifdef LEGACY_CODE
 	// Interface
-	DoubleEdit	edt_refresh_time;
+	DoubleEdit edt_refresh_time;
 #endif
 	// AGC
-	DoubleEdit	edt_attack;
-	DoubleEdit	edt_release;
+	DoubleEdit edt_attack;
+	DoubleEdit edt_release;
 	// DRC
-	DoubleEdit	edt_drc_power;
-	DoubleEdit	edt_drc_level;
+	DoubleEdit edt_drc_power;
+	DoubleEdit edt_drc_level;
 	// Gain control
-	DoubleEdit	edt_master;
-	DoubleEdit	edt_gain;
-	DoubleEdit	edt_voice;
-	DoubleEdit	edt_sur;
-	DoubleEdit	edt_lfe;
+	DoubleEdit edt_master;
+	DoubleEdit edt_gain;
+	DoubleEdit edt_voice;
+	DoubleEdit edt_sur;
+	DoubleEdit edt_lfe;
 	// I/O Gains
-	DoubleEdit	edt_in_gains[NCHANNELS];
-	DoubleEdit	edt_out_gains[NCHANNELS];
+	DoubleEdit edt_in_gains[NCHANNELS];
+	DoubleEdit edt_out_gains[NCHANNELS];
 	// Delay
-	DoubleEdit	edt_delay[NCHANNELS];
+	DoubleEdit edt_delay[NCHANNELS];
 	// Bass redirection
-	DoubleEdit	edt_bass_freq;
+	DoubleEdit edt_bass_freq;
 	// Matrix
-	DoubleEdit	edt_matrix[NCHANNELS][NCHANNELS];
+	DoubleEdit edt_matrix[NCHANNELS][NCHANNELS];
 #if 0
 	// About
-	LinkButton	lnk_home;
-	LinkButton	lnk_forum;
+	LinkButton lnk_home;
+	LinkButton lnk_forum;
 #endif
 
 	///////////////////////////
@@ -67,70 +67,70 @@ private:
 	///////////////////////////
 
 	// Input/Output Formats
-	Speakers	old_in_spk;
-	Speakers	in_spk;
-	Speakers	out_spk;
+	Speakers old_in_spk;
+	Speakers in_spk;
+	Speakers out_spk;
 #ifdef USE_SPDIF
-	bool		use_spdif;
+	bool use_spdif;
 #endif
 	// interface options
-	bool		invert_levels;
+	bool invert_levels;
 #ifdef LEGACY_CODE
-	int			refresh_time;
+	int refresh_time;
 #endif
 	TCHAR old_info[4096];
 	// AGC options
-	bool		auto_gain;
-	bool		normalize;
-	sample_t	attack;
-	sample_t	release;
+	bool auto_gain;
+	bool normalize;
+	sample_t attack;
+	sample_t release;
 	// DRC
-	bool		drc;
-	sample_t	drc_power;
-	sample_t	drc_level;
+	bool drc;
+	sample_t drc_power;
+	sample_t drc_level;
 	// Master gain
-	sample_t	master;
-	sample_t	gain;
+	sample_t master;
+	sample_t gain;
 	// Mix levels
-	sample_t	clev;
-	sample_t	slev;
-	sample_t	lfelev;
+	sample_t clev;
+	sample_t slev;
+	sample_t lfelev;
 	// Input/output levels
 	sample_t input_levels[NCHANNELS];
 	sample_t output_levels[NCHANNELS];
 	// Input/output gains
-	sample_t	input_gains[NCHANNELS];
-	sample_t	output_gains[NCHANNELS];
+	sample_t input_gains[NCHANNELS];
+	sample_t output_gains[NCHANNELS];
 	// Delay
-	bool		delay;
-	float		delays[NCHANNELS];
-	int			delay_units;
+	bool delay;
+	float delays[NCHANNELS];
+	int delay_units;
 	// Matrix options
-	bool		auto_matrix;
-	bool		normalize_matrix;
-	bool		voice_control;
-	bool		expand_stereo;
+	bool auto_matrix;
+	bool normalize_matrix;
+	bool voice_control;
+	bool expand_stereo;
 	// Bass redirection
-	bool		bass_redir;
-	int			bass_freq;
+	bool bass_redir;
+	int bass_freq;
 	// Matrix
-	matrix_t	old_matrix;
-	matrix_t	matrix;
+	matrix_t old_matrix;
+	matrix_t matrix;
 #ifdef USE_SPDIF
 	// SPDIF
-	int			spdif_dts_mode;
-	int			spdif_dts_conv;
-	bool		spdif_use_detector;
-	bool		spdif_encode;
-	bool		spdif_stereo_pt;
-	int			spdif_bitrate;
-	bool		spdif_as_pcm;
-	bool		spdif_check_sr;
-	bool		spdif_allow_48;
-	bool		spdif_allow_44;
-	bool		spdif_allow_32;
-	bool		spdif_query_sink;
-	bool		spdif_close_at_end;
+	int spdif_dts_mode;
+	int spdif_dts_conv;
+	bool spdif_use_detector;
+	bool spdif_encode;
+	bool spdif_stereo_pt;
+	int spdif_bitrate;
+	bool spdif_as_pcm;
+	bool spdif_check_sr;
+	bool spdif_allow_48;
+	bool spdif_allow_44;
+	bool spdif_allow_32;
+	bool spdif_query_sink;
+	bool spdif_close_at_end;
 #endif
 
 	///////////////////////////

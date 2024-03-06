@@ -101,8 +101,8 @@ void Init( void )
 void Quit( void )
 {
 	if (g_pMixer)
-{
-	delete g_pMixer;
+	{
+		delete g_pMixer;
 		g_pMixer = NULL;
 	}
 
@@ -110,13 +110,13 @@ void Quit( void )
 	{
 		void(__cdecl *changed)(const int) = (void(__cdecl *)(const int))GetProcAddress(g_hSlaveInstance, "winampGetOutModeChange");
 		if (changed)
-	{
+		{
 			changed(OUT_UNSET);
-	}
+		}
 
 		/*if (g_pModSlave->Quit)
 		{
-	g_pModSlave->Quit();
+			g_pModSlave->Quit();
 		}*/
 
 		g_hSlaveInstance = NULL;
@@ -160,8 +160,7 @@ void About( HWND p )
 	wchar_t message[1024] = { 0 }, title[128] = { 0 };
 	StringCchPrintf(message, ARRAYSIZE(message), about_text,
 					(LPWSTR)g_OutModMaster.description,
-					L"Darren Owen aka DrO", WACUP_COPYRIGHT,
-					TEXT(__DATE__));
+					WACUP_AUTHOR_STRW, WACUP_COPYRIGHT, TEXT(__DATE__));
 	AboutMessageBox(p, message, WASABI_API_LNGSTRINGW_BUF(IDS_ABOUT_TITLE,
 												title, ARRAYSIZE(title)));
 
@@ -179,9 +178,9 @@ int Open( const int sr, const int nch, const int bps, const int len_ms, const in
 void Close( void )
 {
 	if (g_pMixer)
-{
-	g_pMixer->Close();
-}
+	{
+		g_pMixer->Close();
+	}
 }
 
 int Write( const char * data, const int size )
@@ -207,34 +206,34 @@ int Pause( const int new_state )
 void SetVolume( const int v )
 {
 	if (g_pMixer)
-{
-	g_pMixer->SetVolume( v );
-}
+	{
+		g_pMixer->SetVolume(v);
+	}
 }
 
 void SetPan( const int p )
 {
 	if (g_pMixer)
-{
-	g_pMixer->SetPan( p );
-}
+	{
+		g_pMixer->SetPan(p);
+	}
 }
 
 void Flush( const int pos )
 {
 	if (g_pMixer)
-{
+	{
 		g_pMixer->Flush(pos);
-}
+	}
 }
 
 int GetWrittenTime( void )
-	{
+{
 	return (g_pMixer ? g_pMixer->GetWrittenTime() : 0);
-	}
-	
+}
+
 int GetOutputTime( void )
-	{
+{
 	return (g_pMixer ? g_pMixer->GetOutputTime() : 0);
 }
 
@@ -259,7 +258,7 @@ bool switchOutPutPlugin(const TCHAR* path)
 		}
 
 		//FreeLibrary( g_hSlaveInstance );
-	g_hSlaveInstance = NULL;
+		g_hSlaveInstance = NULL;
 	}
 	g_pModSlave = NULL;
 
@@ -309,7 +308,7 @@ bool switchOutPutPlugin(const TCHAR* path)
 	}
 
 	// Modify slave
-	g_pModSlave->hDllInstance   = g_hSlaveInstance;
+	g_pModSlave->hDllInstance = g_hSlaveInstance;
 	g_pModSlave->hMainWindow = g_OutModMaster.hMainWindow;
 	/*g_pModSlave->Init();
 
@@ -422,7 +421,7 @@ extern "C" __declspec(dllexport) void __cdecl winampGetOutModeChange(const int m
 				LPTSTR pszfilename = szPluginName;
 				DevilConfig *pConfig = new DevilConfig( g_OutModMaster.hDllInstance );
 				pConfig->Read(TEXT("sOutputPlugin"), szPluginName, TEXT("out_notsodirect.dll"));
-	delete pConfig;
+				delete pConfig;
 
 				Out_Module* out_plugin = (!szPluginName[0] ? GetUsableOutputPlugin(TRUE) : nullptr);
 				if (out_plugin && (g_OutModMaster.hDllInstance != out_plugin->hDllInstance))
@@ -436,47 +435,47 @@ extern "C" __declspec(dllexport) void __cdecl winampGetOutModeChange(const int m
 				BOOL loaded = FALSE;
 				TCHAR szFullpath[MAX_PATH] = { 0 };
 				g_hSlaveInstance = GetOrLoadDll(CombinePath(szFullpath, GetPaths()->winamp_plugin_dir, pszfilename), &loaded);
-	if( !g_hSlaveInstance )
-	{
+				if( !g_hSlaveInstance )
+				{
 					/*_tcslwr(szPluginName);
 					TCHAR szBuffer[1000] = { 0 };
 					StringCchPrintf(
 						szBuffer, ARRAYSIZE(szBuffer),
 						TEXT("Slave plugin could not be loaded: %s\n"),
 						szPluginName
-		);
+					);
 					TimedMessageBox( NULL, szBuffer, TEXT("Slave plugin error"), MB_ICONINFORMATION, 5000 );*/
 					return;
-	}
+				}
 
 				HookPluginHelper(g_hSlaveInstance);
 
-	// Find export
-	WINAMPGETOUTMODULE winampGetOutModule =
-		( WINAMPGETOUTMODULE )GetProcAddress( g_hSlaveInstance, "winampGetOutModule" );
-	if( !winampGetOutModule )
-	{
+				// Find export
+				WINAMPGETOUTMODULE winampGetOutModule =
+					( WINAMPGETOUTMODULE )GetProcAddress( g_hSlaveInstance, "winampGetOutModule" );
+				if( !winampGetOutModule )
+				{
 					//FreeLibrary( g_hSlaveInstance );
 					return;
-	}
+				}
 
-	// Get module
-	g_pModSlave = winampGetOutModule();
-	if( !g_pModSlave )
-	{
+				// Get module
+				g_pModSlave = winampGetOutModule();
+				if( !g_pModSlave )
+				{
 					//FreeLibrary( g_hSlaveInstance );
 					return;
-	}
+				}
 
-	// Version mismatch?
-	if( g_pModSlave->version < OUT_VER )
-	{
+				// Version mismatch?
+				if( g_pModSlave->version < OUT_VER )
+				{
 					//FreeLibrary( g_hSlaveInstance );
 					return;
-	}
+				}
 
-	// Modify slave
-	g_pModSlave->hDllInstance   = g_hSlaveInstance;
+				// Modify slave
+				g_pModSlave->hDllInstance = g_hSlaveInstance;
 				g_pModSlave->hMainWindow = g_OutModMaster.hMainWindow;
 
 				if (loaded && g_pModSlave->Init)
@@ -492,5 +491,5 @@ extern "C" __declspec(dllexport) void __cdecl winampGetOutModeChange(const int m
 			}
 			break;
 		}
-}
+	}
 }

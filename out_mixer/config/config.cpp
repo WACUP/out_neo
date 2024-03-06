@@ -31,12 +31,12 @@ const int idc_edt_delay[6]  = { IDC_EDT_DL, IDC_EDT_DC, IDC_EDT_DR, IDC_EDT_DSL,
 
 const int matrix_controls[6][6] =
 {
-  { IDC_EDT_L_L,   IDC_EDT_C_L,   IDC_EDT_R_L,   IDC_EDT_SL_L,   IDC_EDT_SR_L,   IDC_EDT_LFE_L },
-  { IDC_EDT_L_C,   IDC_EDT_C_C,   IDC_EDT_R_C,   IDC_EDT_SL_C,   IDC_EDT_SR_C,   IDC_EDT_LFE_C },
-  { IDC_EDT_L_R,   IDC_EDT_C_R,   IDC_EDT_R_R,   IDC_EDT_SL_R,   IDC_EDT_SR_R,   IDC_EDT_LFE_R },
-  { IDC_EDT_L_SL,  IDC_EDT_C_SL,  IDC_EDT_R_SL,  IDC_EDT_SL_SL,  IDC_EDT_SR_SL,  IDC_EDT_LFE_SL },
-  { IDC_EDT_L_SR,  IDC_EDT_C_SR,  IDC_EDT_R_SR,  IDC_EDT_SL_SR,  IDC_EDT_SR_SR,  IDC_EDT_LFE_SR },
-  { IDC_EDT_L_LFE, IDC_EDT_C_LFE, IDC_EDT_R_LFE, IDC_EDT_SL_LFE, IDC_EDT_SR_LFE, IDC_EDT_LFE_LFE }
+	{ IDC_EDT_L_L,   IDC_EDT_C_L,   IDC_EDT_R_L,   IDC_EDT_SL_L,   IDC_EDT_SR_L,   IDC_EDT_LFE_L },
+	{ IDC_EDT_L_C,   IDC_EDT_C_C,   IDC_EDT_R_C,   IDC_EDT_SL_C,   IDC_EDT_SR_C,   IDC_EDT_LFE_C },
+	{ IDC_EDT_L_R,   IDC_EDT_C_R,   IDC_EDT_R_R,   IDC_EDT_SL_R,   IDC_EDT_SR_R,   IDC_EDT_LFE_R },
+	{ IDC_EDT_L_SL,  IDC_EDT_C_SL,  IDC_EDT_R_SL,  IDC_EDT_SL_SL,  IDC_EDT_SR_SL,  IDC_EDT_LFE_SL },
+	{ IDC_EDT_L_SR,  IDC_EDT_C_SR,  IDC_EDT_R_SR,  IDC_EDT_SL_SR,  IDC_EDT_SR_SR,  IDC_EDT_LFE_SR },
+	{ IDC_EDT_L_LFE, IDC_EDT_C_LFE, IDC_EDT_R_LFE, IDC_EDT_SL_LFE, IDC_EDT_SR_LFE, IDC_EDT_LFE_LFE }
 };
 
 
@@ -45,30 +45,30 @@ const int matrix_controls[6][6] =
 ///////////////////////////////////////////////////////////////////////////////
 inline void cr2crlf(char *_buf, int _size)
 {
-  int cnt = 0;
+	int cnt = 0;
 
-  char *src;
-  char *dst;
+	char *src;
+	char *dst;
 
-  src = _buf;
-  dst = _buf + _size;
-  while (*src && src < dst)
-  {
-    if (*src == '\n')
-      cnt++;
-    src++;
-  }
+	src = _buf;
+	dst = _buf + _size;
+	while (*src && src < dst)
+	{
+		if (*src == '\n')
+			cnt++;
+		src++;
+	}
 
-  dst = src + cnt;
-  if (dst > _buf + _size)
-    dst = _buf + _size;
+	dst = src + cnt;
+	if (dst > _buf + _size)
+		dst = _buf + _size;
 
-  while (src != dst)
-  {
-    *dst-- = *src--;
-    if (src[1] == '\n')
-      *dst-- = '\r';
-  }
+	while (src != dst)
+	{
+		*dst-- = *src--;
+		if (src[1] == '\n')
+			*dst-- = '\r';
+	}
 }
 
 const TCHAR *spklist[] = 
@@ -102,7 +102,7 @@ inline int mode_index(Speakers spk)
 				case MODE_3_1 | CH_MASK_LFE: return 5;
 				case MODE_3_2 | CH_MASK_LFE: return 6;
 			}
-	}
+		}
 	}
 	return 0;
 }
@@ -169,30 +169,30 @@ const TCHAR *units_list[] =
 
 inline int unit_index(int units)
 {
-  switch (units)
-  {
-    case DELAY_SP: return 0;
-    case DELAY_MS: return 1;
-    case DELAY_M : return 2;
-    case DELAY_CM: return 3;
-    case DELAY_FT: return 4;
-    case DELAY_IN: return 5;
-    default:       return 0;
-  };
+	switch (units)
+	{
+		case DELAY_SP: return 0;
+		case DELAY_MS: return 1;
+		case DELAY_M : return 2;
+		case DELAY_CM: return 3;
+		case DELAY_FT: return 4;
+		case DELAY_IN: return 5;
+		default:       return 0;
+	};
 }
 
 inline int unit_from_index(int index)
 {
-  switch (index)
-  {
-    case 0:  return DELAY_SP;
-    case 1:  return DELAY_MS;
-    case 2:  return DELAY_M;
-    case 3:  return DELAY_CM;
-    case 4:  return DELAY_FT;
-    case 5:  return DELAY_IN;
-    default: return DELAY_SP;
-  };
+	switch (index)
+	{
+		case 0:  return DELAY_SP;
+		case 1:  return DELAY_MS;
+		case 2:  return DELAY_M;
+		case 3:  return DELAY_CM;
+		case 4:  return DELAY_FT;
+		case 5:  return DELAY_IN;
+		default: return DELAY_SP;
+	};
 }
 
 const int bitrate_list[] =
@@ -314,7 +314,7 @@ BOOL ConfigDlg::message(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			else
 				m_visible = false;
 			return 1;
-	}
+		}
 	}
 
 	return TabSheet::message(hwnd, uMsg, wParam, lParam);
@@ -334,7 +334,7 @@ void ConfigDlg::update()
 Out_Module* get_out_plugin(LPCWSTR file_name)
 {
 	WINAMPGETOUTMODULE winampGetOutModule = ((file_name != (LPCWSTR)CB_ERR) ? (WINAMPGETOUTMODULE)GetProcAddress(
-											GetDllHandle(GetPaths()->winamp_plugin_dir,
+																	  GetDllHandle(GetPaths()->winamp_plugin_dir,
 																	  file_name, NULL), "winampGetOutModule") : 0);
 	return (winampGetOutModule ? winampGetOutModule() : NULL);
 }
@@ -358,11 +358,11 @@ void ConfigDlg::init_plugin_list()
 	}
 	else
 	{
-	if (g_pModSlave && g_pModSlave->hDllInstance)
-	{
-		GetModuleFileName(g_pModSlave->hDllInstance, szSlaveName, MAX_PATH - 6 - 1);
-		pszSlaveName = (LPWSTR)FindPathFileName(szSlaveName);
-	}
+		if (g_pModSlave && g_pModSlave->hDllInstance)
+		{
+			GetModuleFileName(g_pModSlave->hDllInstance, szSlaveName, MAX_PATH - 6 - 1);
+			pszSlaveName = (LPWSTR)FindPathFileName(szSlaveName);
+		}
 	}
 
 	BOOL re = TRUE;
@@ -389,15 +389,15 @@ void ConfigDlg::init_plugin_list()
 					SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_ADDSTRING, 0, (LPARAM)(desc &&
 													*desc ? desc : File.cFileName)), (LPARAM)
 												WASABI_API_MEMMGR->sysDupStr(File.cFileName));
-				++index;
+					++index;
 
 					if (desc && (out_plugin->version == OUT_VER))
 					{
 						WASABI_API_MEMMGR->sysFree((void*)desc);
 					}
-			}
+				}
 				if (pszSlaveName && (wcscmp(pszSlaveName, File.cFileName) == 0))
-				SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_SETCURSEL, index, 0);
+					SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_SETCURSEL, index, 0);
 			}
 			re = FindNextFile(hSearch, &File);
 		}
@@ -494,21 +494,21 @@ void ConfigDlg::init_controls()
 	// Gains
 	SendDlgItemMessage(hwnd, IDC_SLI_MASTER, TBM_SETRANGE, TRUE, MAKELONG(min_gain_level, max_gain_level) * ticks);
 	SendDlgItemMessage(hwnd, IDC_SLI_MASTER, TBM_SETTIC, 0, 0);
-	SendDlgItemMessage(hwnd, IDC_SLI_GAIN,   TBM_SETRANGE, TRUE, MAKELONG(min_gain_level, max_gain_level) * ticks);
-	SendDlgItemMessage(hwnd, IDC_SLI_GAIN,   TBM_SETTIC, 0, 0);
+	SendDlgItemMessage(hwnd, IDC_SLI_GAIN, TBM_SETRANGE, TRUE, MAKELONG(min_gain_level, max_gain_level) * ticks);
+	SendDlgItemMessage(hwnd, IDC_SLI_GAIN, TBM_SETTIC, 0, 0);
 
-	SendDlgItemMessage(hwnd, IDC_SLI_VOICE,  TBM_SETRANGE, TRUE, MAKELONG(min_gain_level, max_gain_level) * ticks);
-	SendDlgItemMessage(hwnd, IDC_SLI_VOICE,  TBM_SETTIC, 0, 0);
-	SendDlgItemMessage(hwnd, IDC_SLI_SUR,    TBM_SETRANGE, TRUE, MAKELONG(min_gain_level, max_gain_level) * ticks);
-	SendDlgItemMessage(hwnd, IDC_SLI_SUR,    TBM_SETTIC, 0, 0);
-	SendDlgItemMessage(hwnd, IDC_SLI_LFE,    TBM_SETRANGE, TRUE, MAKELONG(min_gain_level, max_gain_level) * ticks);
-	SendDlgItemMessage(hwnd, IDC_SLI_LFE,    TBM_SETTIC, 0, 0);
+	SendDlgItemMessage(hwnd, IDC_SLI_VOICE, TBM_SETRANGE, TRUE, MAKELONG(min_gain_level, max_gain_level) * ticks);
+	SendDlgItemMessage(hwnd, IDC_SLI_VOICE, TBM_SETTIC, 0, 0);
+	SendDlgItemMessage(hwnd, IDC_SLI_SUR, TBM_SETRANGE, TRUE, MAKELONG(min_gain_level, max_gain_level) * ticks);
+	SendDlgItemMessage(hwnd, IDC_SLI_SUR, TBM_SETTIC, 0, 0);
+	SendDlgItemMessage(hwnd, IDC_SLI_LFE, TBM_SETRANGE, TRUE, MAKELONG(min_gain_level, max_gain_level) * ticks);
+	SendDlgItemMessage(hwnd, IDC_SLI_LFE, TBM_SETTIC, 0, 0);
 
 	edt_master.link(hwnd, IDC_EDT_MASTER);
-	edt_gain  .link(hwnd, IDC_EDT_GAIN);
-	edt_voice .link(hwnd, IDC_EDT_VOICE);
-	edt_sur   .link(hwnd, IDC_EDT_SUR);
-	edt_lfe   .link(hwnd, IDC_EDT_LFE);
+	edt_gain.link(hwnd, IDC_EDT_GAIN);
+	edt_voice.link(hwnd, IDC_EDT_VOICE);
+	edt_sur.link(hwnd, IDC_EDT_SUR);
+	edt_lfe.link(hwnd, IDC_EDT_LFE);
 
 	edt_gain.enable(false);
 
@@ -576,8 +576,8 @@ void ConfigDlg::reload_state()
 	const vtime_t time = (m_outMixer->GetOutputTime() / 1000.0);
 	if (time > 0)
 	{
-	m_proc->get_input_levels(time, input_levels);
-	m_proc->get_output_levels(time, output_levels);
+		m_proc->get_input_levels(time, input_levels);
+		m_proc->get_output_levels(time, output_levels);
 	}
 	else
 	{
@@ -936,12 +936,12 @@ void ConfigDlg::command(int control, int message)
 		/////////////////////////////////////
 		// Interface
 		case IDC_CHK_INVERT_LEVELS:
-			{
-				invert_levels = IsDlgButtonChecked(hwnd, IDC_CHK_INVERT_LEVELS) == BST_CHECKED;
-				m_outMixer->set_InvertLevels(invert_levels);
-				update();
-				break;
-			}
+		{
+			invert_levels = IsDlgButtonChecked(hwnd, IDC_CHK_INVERT_LEVELS) == BST_CHECKED;
+			m_outMixer->set_InvertLevels(invert_levels);
+			update();
+			break;
+		}
 #ifdef LEGACY_CODE
 		case IDC_EDT_REFRESH_TIME:
 		{
@@ -986,11 +986,11 @@ void ConfigDlg::command(int control, int message)
 						{
 							out_plugin->Config(hwnd);
 						}
-		}
+					}
 					else
 					{
 						if (out_plugin->About)
-		{
+						{
 							out_plugin->About(hwnd);
 						}
 					}
@@ -1079,8 +1079,8 @@ void ConfigDlg::command(int control, int message)
 		{
 			if (message == TB_THUMBPOSITION || message == TB_ENDTRACK)
 			{
-				clev   = db2value(-double(SendDlgItemMessage(hwnd, IDC_SLI_VOICE, TBM_GETPOS, 0, 0))/ticks);
-				slev   = db2value(-double(SendDlgItemMessage(hwnd, IDC_SLI_SUR,   TBM_GETPOS, 0, 0))/ticks);
+				clev = db2value(-double(SendDlgItemMessage(hwnd, IDC_SLI_VOICE, TBM_GETPOS, 0, 0))/ticks);
+				slev = db2value(-double(SendDlgItemMessage(hwnd, IDC_SLI_SUR,   TBM_GETPOS, 0, 0))/ticks);
 				lfelev = db2value(-double(SendDlgItemMessage(hwnd, IDC_SLI_LFE,   TBM_GETPOS, 0, 0))/ticks);
 				m_proc->set_clev(clev);
 				m_proc->set_slev(slev);
@@ -1095,8 +1095,8 @@ void ConfigDlg::command(int control, int message)
 		{
 			if (message == CB_ENTER)
 			{  
-				clev   = db2value(edt_voice.value);
-				slev   = db2value(edt_sur.value);
+				clev = db2value(edt_voice.value);
+				slev = db2value(edt_sur.value);
 				lfelev = db2value(edt_lfe.value);
 				m_proc->set_clev(clev);
 				m_proc->set_slev(slev);

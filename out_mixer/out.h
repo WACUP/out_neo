@@ -90,7 +90,7 @@ inline Speakers winamp2spk(const int sr, const int nch, const int bps)
 {
 	int format = FORMAT_PCM16;
 	int mask = MODE_2_0;
-	
+
 	switch (bps)
 	{
 		case 16: format = FORMAT_PCM16; break;
@@ -141,7 +141,7 @@ inline int spk2nch(Speakers spk)
 				case MODE_2_2: return 4;
 				case MODE_3_1 | CH_MASK_LFE: return 5;
 				case MODE_3_2 | CH_MASK_LFE: return 6;
-		default: return 2;
+				default: return 2;
 			}
 		}
 	}

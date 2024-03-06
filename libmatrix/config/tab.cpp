@@ -115,7 +115,7 @@ TabDlg::DialogProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
   return dlg->message(hwnd, uMsg, wParam, lParam);
 }
 
-TabDlg::TabDlg(HINSTANCE _hinstance, LPCSTR _dlg_res, HWND _parent) 
+TabDlg::TabDlg(HINSTANCE _hinstance, LPCSTR _dlg_res, HWND _parent)
 {
   hwnd = 0;
   parent = _parent;

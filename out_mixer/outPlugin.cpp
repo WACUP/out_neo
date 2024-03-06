@@ -14,30 +14,30 @@ void outPlugin::Config(HWND hwndParent)
 {
 	if (g_pModSlave && g_pModSlave->Config)
 	{
-	g_pModSlave->Config(hwndParent);
-}
+		g_pModSlave->Config(hwndParent);
+	}
 }
 
 void outPlugin::About(HWND hwndParent)
 {
 	if (g_pModSlave && g_pModSlave->About)
 	{
-	g_pModSlave->About(hwndParent);
-}
+		g_pModSlave->About(hwndParent);
+	}
 }
 
 int outPlugin::Open(Speakers spk, const int bufferlenms, const int prebufferms)
 {
 	return (g_pModSlave && g_pModSlave->Open ? g_pModSlave->Open(spk.sample_rate,
-						 spk2nch(spk), spk2bps(spk), bufferlenms, prebufferms) : -1);
+				     spk2nch(spk), spk2bps(spk), bufferlenms, prebufferms) : -1);
 }
 
 void outPlugin::Close(void)
 {
 	if (g_pModSlave && g_pModSlave->Close)
-{
-	g_pModSlave->Close();
-}
+	{
+		g_pModSlave->Close();
+	}
 }
 
 int outPlugin::Write(const char *buf, const int len)
@@ -63,25 +63,25 @@ int outPlugin::Pause(const int pause)
 void outPlugin::SetVolume(const int volume)
 {
 	if (g_pModSlave)
-{
-	g_pModSlave->SetVolume(volume);
-}
+	{
+		g_pModSlave->SetVolume(volume);
+	}
 }
 
 void outPlugin::SetPan(const int pan)
 {
 	if (g_pModSlave)
-{
-	g_pModSlave->SetPan(pan);
-}
+	{
+		g_pModSlave->SetPan(pan);
+	}
 }
 
 void outPlugin::Flush(const int t)
 {
 	if (g_pModSlave && g_pModSlave->Flush)
-{
-	g_pModSlave->Flush(t);
-}
+	{
+		g_pModSlave->Flush(t);
+	}
 }
 
 int outPlugin::GetOutputTime(void)

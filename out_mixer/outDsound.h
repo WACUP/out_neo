@@ -5,9 +5,9 @@
 class outDsound : public IOut
 {
 private:
-	DSoundSink	m_dsound;
-	Chunk		m_chunk;
-	int			m_volume;
+	DSoundSink m_dsound;
+	Chunk m_chunk;
+	int m_volume;
 
 public:
 	outDsound(void);

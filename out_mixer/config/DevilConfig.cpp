@@ -115,7 +115,7 @@ DevilConfig::DevilConfig( const TCHAR * szCopySection, const TCHAR * szFilename 
 	memcpy( szIniPath, szFilename, uFilenameLen * sizeof( TCHAR ) );
 	szIniPath[ uFilenameLen ] = TEXT( '\0' );
 #endif
-	
+
 	const size_t uSectionLen = _tcslen( szCopySection );
 	szSection = new TCHAR[ uSectionLen + 1 ];
 	memcpy( szSection, szCopySection, uSectionLen * sizeof( TCHAR ) );
