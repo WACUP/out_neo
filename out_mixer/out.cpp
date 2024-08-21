@@ -12,7 +12,6 @@
 #include <loader/hook/squash.h>
 #include <api/memmgr/api_memmgr.h>
 #include "resource.h"
-#include "../wacup_version.h"
 #include "config/tab.h"
 
 // {092E2E9A-A2C0-47b8-9712-D026AE485BEA}
@@ -158,9 +157,9 @@ void About( HWND p )
 	DecompressResource(data, data_size, (unsigned char**)&about_text, 0, true);
 
 	wchar_t message[1024] = { 0 }, title[128] = { 0 };
-	StringCchPrintf(message, ARRAYSIZE(message), about_text,
-					(LPWSTR)g_OutModMaster.description,
-					WACUP_AUTHOR_STRW, WACUP_COPYRIGHT, TEXT(__DATE__));
+	StringCchPrintf(message, ARRAYSIZE(message), about_text, (LPWSTR)
+					g_OutModMaster.description, WACUP_Author(),
+					WACUP_Copyright(), TEXT(__DATE__));
 	AboutMessageBox(p, message, WASABI_API_LNGSTRINGW_BUF(IDS_ABOUT_TITLE,
 												title, ARRAYSIZE(title)));
 

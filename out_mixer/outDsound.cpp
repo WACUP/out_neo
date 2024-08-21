@@ -23,7 +23,7 @@ void outDsound::About(HWND hwndParent)
 int outDsound::Open(Speakers spk, const int bufferlenms, const int prebufferms)
 {
 	if (m_dsound.get_buffer_size() == 0)
-		m_dsound.open(Speakers(FORMAT_SPDIF, MODE_STEREO, 48000));
+		return m_dsound.open(Speakers(FORMAT_SPDIF, MODE_STEREO, 48000));
 	return 1;
 }
 
