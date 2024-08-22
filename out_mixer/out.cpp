@@ -150,23 +150,17 @@ void Config( HWND p )
 
 void About( HWND p )
 {
-	LPWSTR about_text = NULL;
-	DWORD data_size = 0;
-	unsigned char* data = (unsigned char*)WASABI_API_LOADRESFROMFILEW(L"GZ",
-						   MAKEINTRESOURCEW(IDR_ABOUT_TEXT_GZ), &data_size);
-	DecompressResource(data, data_size, (unsigned char**)&about_text, 0, true);
+	const unsigned char* output = DecompressResourceText(WASABI_API_LNG_HINST, WASABI_API_ORIG_HINST,
+																			IDR_ABOUT_TEXT_GZ, true);
 
 	wchar_t message[1024] = { 0 }, title[128] = { 0 };
-	StringCchPrintf(message, ARRAYSIZE(message), about_text, (LPWSTR)
+	StringCchPrintf(message, ARRAYSIZE(message), (LPCWSTR)output, (LPWSTR)
 					g_OutModMaster.description, WACUP_Author(),
 					WACUP_Copyright(), TEXT(__DATE__));
 	AboutMessageBox(p, message, WASABI_API_LNGSTRINGW_BUF(IDS_ABOUT_TITLE,
 												title, ARRAYSIZE(title)));
 
-	if (about_text)
-	{
-		WASABI_API_MEMMGR->sysFree(about_text);
-	}
+	DecompressResourceFree(output);
 }
 
 int Open( const int sr, const int nch, const int bps, const int len_ms, const int pre_len_ms )
