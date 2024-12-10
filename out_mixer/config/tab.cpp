@@ -222,7 +222,7 @@ void TabDlg::exec()
 #endif
 }
 
-void TabDlg::add_page(int i, TabSheet *sheet, TCHAR *title)
+void TabDlg::add_page(int i, TabSheet *sheet, const TCHAR *title)
 {
 	if (IsWindow(hwnd)) 
 	{
