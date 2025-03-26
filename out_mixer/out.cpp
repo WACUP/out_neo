@@ -151,7 +151,7 @@ void Config( HWND p )
 void About( HWND p )
 {
 	const unsigned char* output = DecompressResourceText(WASABI_API_LNG_HINST, WASABI_API_ORIG_HINST,
-																			IDR_ABOUT_TEXT_GZ, true);
+																	  IDR_ABOUT_TEXT_GZ, NULL, true);
 
 	wchar_t message[1024] = { 0 }, title[128] = { 0 };
 	StringCchPrintf(message, ARRAYSIZE(message), (LPCWSTR)output, (LPWSTR)
