@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <loader/loader/paths.h>
 #include <loader/loader/utils.h>
-#include <api/memmgr/api_memmgr.h>
 #include <nu/autowide.h>
 #include "config.h"
 
@@ -366,43 +365,47 @@ void ConfigDlg::init_plugin_list()
 	}
 
 	BOOL re = TRUE;
-	WIN32_FIND_DATA File = { 0 };
-	HANDLE hSearch = SearchFolder(szFullpath, GetPaths()->winamp_plugin_dir, L"out_*.dll", &File);
+	LPWIN32_FIND_DATA File = NULL;
+	HANDLE hSearch = SearchFiles(szFullpath, GetPaths()->winamp_plugin_dir, L"out_*.dll", &File);
 	SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_RESETCONTENT, 0, 0);
-	if (hSearch != INVALID_HANDLE_VALUE)
+	if (File && (hSearch != INVALID_HANDLE_VALUE))
 	{
 		int index = -1;
 		while (re)
 		{
-			if (IsValidPluginFile(File.cFileName))
+			if (IsValidPluginFile(File->cFileName))
 			{
-				if (pszMasterName && (wcscmp(pszMasterName, File.cFileName) != 0) &&
-					!IsDllBlocked(File.cFileName) && CanLoadPlugin(File.cFileName, TRUE))
+				if (pszMasterName && !SameStr(pszMasterName, File->cFileName) &&
+					!IsDllBlocked(File->cFileName) && CanLoadPlugin(File->cFileName, TRUE))
 				{
-					Out_Module* out_plugin = get_out_plugin(File.cFileName);
+					Out_Module* out_plugin = get_out_plugin(File->cFileName);
 
 					LPCWSTR desc = (out_plugin ? (((out_plugin->version == OUT_VER_U) ?
-									(wchar_t *)out_plugin->description :
-									AutoWideDup(out_plugin->description))) : NULL);
+									(wchar_t *)out_plugin->description : ConvertANSI(
+									out_plugin->description, -1, CP_ACP, NULL, 0))) : NULL);
 
 					SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_SETITEMDATA,
-					SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_ADDSTRING, 0, (LPARAM)(desc &&
-													*desc ? desc : File.cFileName)), (LPARAM)
-												WASABI_API_MEMMGR->sysDupStr(File.cFileName));
+					SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_ADDSTRING, 0, (LPARAM)
+									   (desc && *desc ? desc : File->cFileName)),
+									   (LPARAM)SafeWideDup(File->cFileName));
 					++index;
 
 					if (desc && (out_plugin->version == OUT_VER))
 					{
-						WASABI_API_MEMMGR->sysFree((void*)desc);
+						SafeFree((void*)desc);
 					}
 				}
-				if (pszSlaveName && (wcscmp(pszSlaveName, File.cFileName) == 0))
+
+				if (pszSlaveName && (wcscmp(pszSlaveName, File->cFileName) == 0))
+				{
 					SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_SETCURSEL, index, 0);
+				}
 			}
-			re = FindNextFile(hSearch, &File);
+
+			re = FindNextFile(hSearch, File);
 		}
-		FindClose(hSearch);
 	}
+	SearchClose(hSearch, File);
 }
 
 void ConfigDlg::init_controls()
@@ -777,15 +780,15 @@ void ConfigDlg::update_dynamic_controls()
 	{
 		TCHAR buf[128] = { 0 };
 		old_in_spk = in_spk;
-		StringCchPrintf(buf, ARRAYSIZE(buf),
+		PrintfCch(buf, ARRAYSIZE(buf),
 #ifdef _UNICODE
-						TEXT("Output format    (Current input format: %hs %hs @ %iHz)"),
+				  TEXT("Output format    (Current input format: %hs %hs @ %iHz)"),
 #else
-						TEXT("Output format    (Current input format: %s %s @ %iHz)"),
+				  TEXT("Output format    (Current input format: %s %s @ %iHz)"),
 #endif
-						in_spk.format_text(),
-						in_spk.mode_text(),
-						in_spk.sample_rate);
+				  in_spk.format_text(),
+				  in_spk.mode_text(),
+				  in_spk.sample_rate);
 		SetDlgItemText(hwnd, IDC_GRP_OUTPUT, buf);
 	}
 
@@ -797,7 +800,7 @@ void ConfigDlg::update_dynamic_controls()
 #ifndef _UNICODDE
 	cr2crlf(infoA, ARRAYSIZE(old_info));
 #endif
-	StringCchPrintf(infoW, ARRAYSIZE(infoW), L"%S", infoA);
+	PrintfCch(infoW, ARRAYSIZE(infoW), L"%S", infoA);
 
 	if (memcmp(infoW, old_info, ARRAYSIZE(old_info)) || m_refresh)
 	{
@@ -808,15 +811,15 @@ void ConfigDlg::update_dynamic_controls()
 #ifdef USE_SPDIF
 	/////////////////////////////////////
 	// Frames/errors
-	StringCchPrintf(infoW, ARRAYSIZE(infoW), L"%i",
-					m_dvd_graph->dec.get_frames() +
-					m_dvd_graph->spdifer_pt.get_frames() +
-					m_dvd_graph->spdifer_enc.get_frames());
+	PrintfCch(infoW, ARRAYSIZE(infoW), L"%i",
+			  m_dvd_graph->dec.get_frames() +
+			  m_dvd_graph->spdifer_pt.get_frames() +
+			  m_dvd_graph->spdifer_enc.get_frames());
 	SetDlgItemText(hwnd, IDC_EDT_FRAMES, infoW);
-	StringCchPrintf(infoW, ARRAYSIZE(infoW), L"%i",
-					m_dvd_graph->dec.get_errors() +
-					m_dvd_graph->spdifer_pt.get_errors() +
-					m_dvd_graph->spdifer_enc.get_errors());
+	PrintfCch(infoW, ARRAYSIZE(infoW), L"%i",
+			  m_dvd_graph->dec.get_errors() +
+			  m_dvd_graph->spdifer_pt.get_errors() +
+			  m_dvd_graph->spdifer_enc.get_errors());
 	SetDlgItemText(hwnd, IDC_EDT_ERRORS, infoW);
 #endif
 

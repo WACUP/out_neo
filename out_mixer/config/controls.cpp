@@ -5,8 +5,8 @@
 #include <windows.h>
 #include <commctrl.h>   // tooltip
 #include <shellapi.h>
-#include <strsafe.h>
 #include "controls.h"
+#include <loader/loader/utils.h>
 
 #define TTS_BALLOON 0x40
 
@@ -302,7 +302,7 @@ void DoubleEdit::restore_value()
 void DoubleEdit::write_value()
 {
 	wchar_t buf[256] = { 0 };
-	StringCchPrintf(buf, ARRAYSIZE(buf), L"%.4g", value);
+	PrintfCch(buf, ARRAYSIZE(buf), L"%.4g", value);
 	SetDlgItemText(dlg, item, buf);
 }
 
@@ -442,7 +442,7 @@ void LinkButton::paint(HDC dc)
 	// Draw description text or url
 	HFONT old_font = (HFONT)SelectObject(dc, font);
 	COLORREF old_color = SetTextColor(dc, RGB(0, 0, 255));
-	DrawText(dc, link_text, link_text_len, &client_rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+	DrawTextEx(dc, link_text, link_text_len, &client_rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER, NULL);
 	SetTextColor(dc, old_color);
 	SelectObject(dc, old_font);
 }

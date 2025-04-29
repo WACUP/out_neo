@@ -4,7 +4,6 @@
 #include "tab.h"
 #include "../out.h"
 #include <loader/loader/utils.h>
-#include <api/memmgr/api_memmgr.h>
 #include "../resource.h"
 #include "../outMixer.h"
 
@@ -36,8 +35,8 @@ INT_PTR CALLBACK TabSheet::DialogProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 			const int count = (int)SendMessage(output_plugin_list, CB_GETCOUNT, 0, 0);
 			for (int i = 0; i < count; i++)
 			{
-				WASABI_API_MEMMGR->sysFree((void*)SendMessage(output_plugin_list,
-														  CB_GETITEMDATA, i, 0));
+				SafeFree((void*)SendMessage(output_plugin_list,
+										CB_GETITEMDATA, i, 0));
 			}
 		}
 	}

@@ -4,13 +4,11 @@
 #include "out.h"
 #include "outMixer.h"
 #include "config\DevilConfig.h"
-#include "config\DevilConfig.h"
 #include <loader/loader/paths.h>
 #include <loader/loader/utils.h>
 #include <nu/servicebuilder.h>
 #include <loader/hook/get_api_service.h>
 #include <loader/hook/squash.h>
-#include <api/memmgr/api_memmgr.h>
 #include "resource.h"
 #include "config/tab.h"
 
@@ -20,7 +18,6 @@ static const GUID OutNotSoNeoLangGUID =
 
 // wasabi based services for localisation support
 api_service* WASABI_API_SVC = 0;
-api_memmgr* WASABI_API_MEMMGR = 0;
 api_application* WASABI_API_APP = 0;
 
 SETUP_API_LNG_VARS;
@@ -85,12 +82,8 @@ void Init( void )
 	WASABI_API_SVC = GetServiceAPIPtr();
 	if (WASABI_API_SVC != NULL)
 	{
-		ServiceBuild(WASABI_API_SVC, WASABI_API_LNG, languageApiGUID);
-		ServiceBuild(WASABI_API_SVC, WASABI_API_MEMMGR, memMgrApiServiceGuid);
-
-		WASABI_API_START_LANG_DESC(WASABI_API_LNG, g_OutModMaster.hDllInstance,
-								   OutNotSoNeoLangGUID, IDS_PLUGIN_NAME,
-								   PLUGIN_VERSION, &g_OutModMaster.description);
+		StartPluginLangWithDesc(g_OutModMaster.hDllInstance, OutNotSoNeoLangGUID,
+				   IDS_PLUGIN_NAME, PLUGIN_VERSION, &g_OutModMaster.description);
 	}
 }
 
@@ -154,11 +147,11 @@ void About( HWND p )
 																	  IDR_ABOUT_TEXT_GZ, NULL, true);
 
 	wchar_t message[1024] = { 0 }, title[128] = { 0 };
-	StringCchPrintf(message, ARRAYSIZE(message), (LPCWSTR)output, (LPWSTR)
-					g_OutModMaster.description, WACUP_Author(),
-					WACUP_Copyright(), TEXT(__DATE__));
-	AboutMessageBox(p, message, WASABI_API_LNGSTRINGW_BUF(IDS_ABOUT_TITLE,
-												title, ARRAYSIZE(title)));
+	PrintfCch(message, ARRAYSIZE(message), (LPCWSTR)output, (LPWSTR)
+			  g_OutModMaster.description, WACUP_Author(),
+			  WACUP_Copyright(), TEXT(__DATE__));
+	AboutMessageBox(p, message, LngStringCopy(IDS_ABOUT_TITLE,
+									title, ARRAYSIZE(title)));
 
 	DecompressResourceFree(output);
 }
@@ -257,7 +250,7 @@ bool switchOutPutPlugin(const TCHAR* path)
 
 	// Load slave dll but check if it's already
 	// been loaded to avoid some duplicate bits
-	g_hSlaveInstance = GetOrLoadDll(path, NULL);
+	g_hSlaveInstance = GetOrLoadDll(path, NULL, FALSE);
 	if( !g_hSlaveInstance )
 	{
 #if 0 // TODO
@@ -354,17 +347,17 @@ extern "C" __declspec(dllexport) BOOL __cdecl winampGetOutPrefs(prefsDlgRecW* pr
 	{
 		Init();
 
-		if (WASABI_API_LNG != NULL)
+		if (output_prefs == NULL)
 		{
 			// need to have this initialised before we try
 			// to do anything with localisation features
 			// TODO
-			WASABI_API_START_LANG(g_OutModMaster.hDllInstance, OutNotSoNeoLangGUID);
+			StartPluginLangOnly(g_OutModMaster.hDllInstance, OutNotSoNeoLangGUID);
 
 			// TODO localise
 			prefs->hInst = GetModuleHandle(GetPaths()->wacup_core_dll)/*WASABI_API_LNG_HINST*/;
 			prefs->dlgID = IDD_TABBED_PREFS_DIALOG;// IDD_CONFIG;
-			prefs->name = WASABI_API_LNGSTRINGW_DUP(IDS_PREFS_NAME);
+			prefs->name = LngStringDup(IDS_PREFS_NAME);
 			prefs->proc = MixerConfigProc;
 			prefs->where = 9;
 			prefs->_id = 54;
@@ -398,7 +391,7 @@ extern "C" __declspec(dllexport) void __cdecl winampGetOutModeChange(const int m
 					if (WASABI_API_LNG == NULL)
 					{
 						ServiceBuild(WASABI_API_SVC, WASABI_API_LNG, languageApiGUID);
-						WASABI_API_START_LANG(plugin.hDllInstance, OutNotSoNeoLangGUID);
+						StartPluginLangOnly(plugin.hDllInstance, OutNotSoNeoLangGUID);
 					}
 				}
 			}*/
@@ -427,12 +420,13 @@ extern "C" __declspec(dllexport) void __cdecl winampGetOutModeChange(const int m
 				// been loaded to avoid some duplicate bits
 				BOOL loaded = FALSE;
 				TCHAR szFullpath[MAX_PATH] = { 0 };
-				g_hSlaveInstance = GetOrLoadDll(CombinePath(szFullpath, GetPaths()->winamp_plugin_dir, pszfilename), &loaded);
+				g_hSlaveInstance = GetOrLoadDll(CombinePath(szFullpath, GetPaths()->
+								   winamp_plugin_dir, pszfilename), &loaded, FALSE);
 				if( !g_hSlaveInstance )
 				{
 					/*_tcslwr(szPluginName);
 					TCHAR szBuffer[1000] = { 0 };
-					StringCchPrintf(
+					PrintfCch(
 						szBuffer, ARRAYSIZE(szBuffer),
 						TEXT("Slave plugin could not be loaded: %s\n"),
 						szPluginName

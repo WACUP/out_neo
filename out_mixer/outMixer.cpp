@@ -459,7 +459,7 @@ int outMixer::Open(int samplerate, int numchannels, int bitspersamp, int bufferl
 	// Changement de plugin si ce n'est pas le bon
 	if (*m_out_plugin == '\0' && pszFullpath)
 	{
-		StringCchCopy(m_out_plugin, ARRAYSIZE(m_out_plugin), pszFullpath);
+		CopyCchStr(m_out_plugin, ARRAYSIZE(m_out_plugin), pszFullpath);
 	}
 	else
 	{
@@ -675,7 +675,7 @@ void outMixer::ChangeOutput(const int ispk, const int ifmt, const int rate)
 ////////////////////////////////////////////////////////////////////////////////
 void outMixer::set_OutputPlugin(const TCHAR *path)
 {	
-	StringCchCopy(m_out_plugin, ARRAYSIZE(m_out_plugin), path);
+	CopyCchStr(m_out_plugin, ARRAYSIZE(m_out_plugin), path);
 	m_pConfig->Write(TEXT("sOutputPlugin"), m_out_plugin);
 }
 
