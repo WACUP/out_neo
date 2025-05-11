@@ -382,7 +382,7 @@ void ConfigDlg::init_plugin_list()
 
 					LPCWSTR desc = (out_plugin ? (((out_plugin->version == OUT_VER_U) ?
 									(wchar_t *)out_plugin->description : ConvertANSI(
-									out_plugin->description, -1, CP_ACP, NULL, 0))) : NULL);
+									out_plugin->description, -1, CP_ACP, NULL, 0, NULL))) : NULL);
 
 					SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_SETITEMDATA,
 					SendDlgItemMessage(hwnd, IDC_CMB_OUTPUT, CB_ADDSTRING, 0, (LPARAM)

@@ -250,7 +250,7 @@ bool switchOutPutPlugin(const TCHAR* path)
 
 	// Load slave dll but check if it's already
 	// been loaded to avoid some duplicate bits
-	g_hSlaveInstance = GetOrLoadDll(path, NULL, FALSE);
+	g_hSlaveInstance = GetOrLoadDll(path, NULL, FALSE, NULL, NULL);
 	if( !g_hSlaveInstance )
 	{
 #if 0 // TODO
@@ -420,8 +420,8 @@ extern "C" __declspec(dllexport) void __cdecl winampGetOutModeChange(const int m
 				// been loaded to avoid some duplicate bits
 				BOOL loaded = FALSE;
 				TCHAR szFullpath[MAX_PATH] = { 0 };
-				g_hSlaveInstance = GetOrLoadDll(CombinePath(szFullpath, GetPaths()->
-								   winamp_plugin_dir, pszfilename), &loaded, FALSE);
+				g_hSlaveInstance = GetOrLoadDll(CombinePath(szFullpath, GetPaths()->winamp_plugin_dir,
+															pszfilename), &loaded, FALSE, NULL, NULL);
 				if( !g_hSlaveInstance )
 				{
 					/*_tcslwr(szPluginName);
