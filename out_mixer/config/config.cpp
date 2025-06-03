@@ -340,15 +340,21 @@ Out_Module* get_out_plugin(LPCWSTR file_name)
 
 void ConfigDlg::init_plugin_list()
 {
-	WCHAR szFullpath[MAX_PATH] = { 0 };
-	WCHAR szMasterName[MAX_PATH] = { 0 };
+	WCHAR szFullpath[MAX_PATH]/* = { 0 }*/;
+	WCHAR szMasterName[MAX_PATH]/* = { 0 }*/;
 	WCHAR *pszMasterName;
-	WCHAR szSlaveName[MAX_PATH] = { 0 };
+	WCHAR szSlaveName[MAX_PATH]/* = { 0 }*/;
 	WCHAR *pszSlaveName = 0;
 
 	// get master plugin file name
-	GetModuleFileName(g_OutModMaster.hDllInstance, szMasterName, MAX_PATH - 6 - 1);
-	pszMasterName = (LPWSTR)FindPathFileName(szMasterName);
+	if (GetModuleFileName(g_OutModMaster.hDllInstance, szMasterName, MAX_PATH - 6 - 1))
+	{
+		pszMasterName = (LPWSTR)FindPathFileName(szMasterName);
+	}
+	else
+	{
+		pszMasterName = NULL;
+	}
 
 	// get slave plugin file name
 	if (g_pMixer)
@@ -359,8 +365,18 @@ void ConfigDlg::init_plugin_list()
 	{
 		if (g_pModSlave && g_pModSlave->hDllInstance)
 		{
-			GetModuleFileName(g_pModSlave->hDllInstance, szSlaveName, MAX_PATH - 6 - 1);
-			pszSlaveName = (LPWSTR)FindPathFileName(szSlaveName);
+			if (GetModuleFileName(g_pModSlave->hDllInstance, szSlaveName, MAX_PATH - 6 - 1))
+			{
+				pszSlaveName = (LPWSTR)FindPathFileName(szSlaveName);
+			}
+			else
+			{
+				pszSlaveName = NULL;
+			}
+		}
+		else
+		{
+			pszSlaveName = NULL;
 		}
 	}
 
@@ -421,7 +437,7 @@ void ConfigDlg::init_controls()
 
 	/////////////////////////////////////
 	// Build and environment info
-	TCHAR info[1024] = {0};
+	TCHAR info[32]/* = {0}*/;
 
 	/*_tcsncpy(info, valib_build_info(), ARRAYSIZE(info));
 	info[ARRAYSIZE(info)-1] = 0;
@@ -473,10 +489,10 @@ void ConfigDlg::init_controls()
 	// I/O Levels
 	for (ch = 0; ch < NCHANNELS; ch++)
 	{
-		SendDlgItemMessage(hwnd, idc_level_in[ch],  PBM_SETBARCOLOR, 0, RGB(0, 128, 0));
-		SendDlgItemMessage(hwnd, idc_level_out[ch], PBM_SETBARCOLOR, 0, RGB(0, 128, 0));
-		SendDlgItemMessage(hwnd, idc_level_in[ch],  PBM_SETRANGE, 0, MAKELPARAM(0, -min_level * ticks));
-		SendDlgItemMessage(hwnd, idc_level_out[ch], PBM_SETRANGE, 0, MAKELPARAM(0, -min_level * ticks));
+		PostDlgItemMessage(hwnd, idc_level_in[ch],  PBM_SETBARCOLOR, 0, RGB(0, 128, 0));
+		PostDlgItemMessage(hwnd, idc_level_out[ch], PBM_SETBARCOLOR, 0, RGB(0, 128, 0));
+		PostDlgItemMessage(hwnd, idc_level_in[ch],  PBM_SETRANGE, 0, MAKELPARAM(0, -min_level * ticks));
+		PostDlgItemMessage(hwnd, idc_level_out[ch], PBM_SETRANGE, 0, MAKELPARAM(0, -min_level * ticks));
 	}
 
 	/////////////////////////////////////
@@ -778,7 +794,7 @@ void ConfigDlg::update_dynamic_controls()
 {
 	if ((in_spk != old_in_spk) || m_refresh)
 	{
-		TCHAR buf[128] = { 0 };
+		TCHAR buf[128]/* = { 0 }*/;
 		old_in_spk = in_spk;
 		PrintfCch(buf, ARRAYSIZE(buf),
 #ifdef _UNICODE
@@ -795,16 +811,16 @@ void ConfigDlg::update_dynamic_controls()
 	/////////////////////////////////////
 	// Stream info
 	char infoA[ARRAYSIZE(old_info)] = { 0 };
-	wchar_t infoW[ARRAYSIZE(old_info)] = { 0 };
+	wchar_t infoW[ARRAYSIZE(old_info)]/* = { 0 }*/;
 	m_dvd_graph->get_info(infoA, ARRAYSIZE(old_info));
 #ifndef _UNICODDE
 	cr2crlf(infoA, ARRAYSIZE(old_info));
 #endif
-	PrintfCch(infoW, ARRAYSIZE(infoW), L"%S", infoA);
 
-	if (memcmp(infoW, old_info, ARRAYSIZE(old_info)) || m_refresh)
+	const size_t copied = PrintfCch(infoW, ARRAYSIZE(infoW), L"%S", infoA);
+	if (!SameStr(infoW, old_info) || m_refresh)
 	{
-		memcpy(old_info, infoW, ARRAYSIZE(old_info) * sizeof(TCHAR));
+		CopyCchStr(old_info, (copied + 1)/*need to include the null*/, infoW);
 		SendDlgItemMessage(hwnd, IDC_EDT_INFO, WM_SETTEXT, 0, (LPARAM)infoW);
 	}
 
@@ -829,15 +845,15 @@ void ConfigDlg::update_dynamic_controls()
 	{
 		if (invert_levels)
 		{
-			SendDlgItemMessage(hwnd, idc_level_in[ch],  PBM_SETPOS, input_levels[ch]  > 0 ? long(-value2db(input_levels[ch]) * ticks) : long(-min_level * ticks), 0);
-			SendDlgItemMessage(hwnd, idc_level_out[ch], PBM_SETPOS, output_levels[ch]  > 0 ? long(-value2db(output_levels[ch]) * ticks) : long(-min_level * ticks), 0);
+			PostDlgItemMessage(hwnd, idc_level_in[ch],  PBM_SETPOS, input_levels[ch]  > 0 ? long(-value2db(input_levels[ch]) * ticks) : long(-min_level * ticks), 0);
+			PostDlgItemMessage(hwnd, idc_level_out[ch], PBM_SETPOS, output_levels[ch]  > 0 ? long(-value2db(output_levels[ch]) * ticks) : long(-min_level * ticks), 0);
 		}
 		else
 		{
-			SendDlgItemMessage(hwnd, idc_level_in[ch],  PBM_SETPOS, input_levels[ch]  > 0 ? long((value2db(input_levels[ch]) - min_level) * ticks): 0, 0);
-			SendDlgItemMessage(hwnd, idc_level_out[ch], PBM_SETPOS, output_levels[ch]  > 0 ? long((value2db(output_levels[ch]) - min_level) * ticks): 0, 0);
+			PostDlgItemMessage(hwnd, idc_level_in[ch],  PBM_SETPOS, input_levels[ch]  > 0 ? long((value2db(input_levels[ch]) - min_level) * ticks): 0, 0);
+			PostDlgItemMessage(hwnd, idc_level_out[ch], PBM_SETPOS, output_levels[ch]  > 0 ? long((value2db(output_levels[ch]) - min_level) * ticks): 0, 0);
 		}
-		SendDlgItemMessage(hwnd, idc_level_out[ch], PBM_SETBARCOLOR, 0, (output_levels[ch] > 0.99)? RGB(255, 0, 0): RGB(0, 128, 0));
+		PostDlgItemMessage(hwnd, idc_level_out[ch], PBM_SETBARCOLOR, 0, (output_levels[ch] > 0.99)? RGB(255, 0, 0): RGB(0, 128, 0));
 	}
 
 	/////////////////////////////////////

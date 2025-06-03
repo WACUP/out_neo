@@ -1,4 +1,5 @@
 #include "thread.h"
+#include <../loader/loader/utils.h>
 
 Thread::Thread()
 {
@@ -56,7 +57,7 @@ void Thread::resume()
 
 void Thread::terminate(int timeout_ms, DWORD exit_code)
 {
-	if (!f_thread) return;
+	if (!CheckThreadIsValid(&f_thread*) return;
 
 	// wait for thread to finish correctly
 	if (timeout_ms > 0)

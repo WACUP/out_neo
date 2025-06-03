@@ -146,7 +146,7 @@ void About( HWND p )
 	const unsigned char* output = DecompressResourceText(WASABI_API_LNG_HINST, WASABI_API_ORIG_HINST,
 																	  IDR_ABOUT_TEXT_GZ, NULL, true);
 
-	wchar_t message[1024] = { 0 }, title[128] = { 0 };
+	wchar_t message[1024]/* = { 0 }*/, title[128]/* = { 0 }*/;
 	PrintfCch(message, ARRAYSIZE(message), (LPCWSTR)output, (LPWSTR)
 			  g_OutModMaster.description, WACUP_Author(),
 			  WACUP_Copyright(), TEXT(__DATE__));
@@ -255,7 +255,7 @@ bool switchOutPutPlugin(const TCHAR* path)
 	{
 #if 0 // TODO
 		//_strlwr( walk );
-		TCHAR szBuffer[1000] = { 0 };
+		TCHAR szBuffer[1000]/* = { 0 }*/;
 		_tprintf(
 			szBuffer,
 			TEXT("Slave plugin could not be loaded: %s\n"),
@@ -347,25 +347,21 @@ extern "C" __declspec(dllexport) BOOL __cdecl winampGetOutPrefs(prefsDlgRecW* pr
 	{
 		Init();
 
-		if (output_prefs == NULL)
-		{
-			// need to have this initialised before we try
-			// to do anything with localisation features
-			// TODO
-			StartPluginLangOnly(g_OutModMaster.hDllInstance, OutNotSoNeoLangGUID);
+		// need to have this initialised before we try
+		// to do anything with localisation features
+		// TODO
+		StartPluginLangOnly(g_OutModMaster.hDllInstance, OutNotSoNeoLangGUID);
 
-			// TODO localise
-			prefs->hInst = GetModuleHandle(GetPaths()->wacup_core_dll)/*WASABI_API_LNG_HINST*/;
-			prefs->dlgID = IDD_TABBED_PREFS_DIALOG;// IDD_CONFIG;
-			prefs->name = LngStringDup(IDS_PREFS_NAME);
-			prefs->proc = MixerConfigProc;
-			prefs->where = 9;
-			prefs->_id = 54;
-			output_prefs = prefs;
-			return TRUE;
-		}
+		// TODO localise
+		prefs->hInst = GetModuleHandle(GetPaths()->wacup_core_dll)/*WASABI_API_LNG_HINST*/;
+		prefs->dlgID = IDD_TABBED_PREFS_DIALOG;// IDD_CONFIG;
+		prefs->name = LngStringDup(IDS_PREFS_NAME);
+		prefs->proc = MixerConfigProc;
+		prefs->where = 9;
+		prefs->_id = 54;
+		output_prefs = prefs;
 	}
-	return FALSE;
+	return !!output_prefs;
 }
 
 extern "C" __declspec(dllexport) void __cdecl winampGetOutModeChange(const int mode)
@@ -403,9 +399,10 @@ extern "C" __declspec(dllexport) void __cdecl winampGetOutModeChange(const int m
 				if (!g_pMixer)
 					g_pMixer = new outMixer();
 
-				TCHAR szPluginName[256] = { 0 };
+				TCHAR szPluginName[256]/* = { 0 }*/;
 				LPTSTR pszfilename = szPluginName;
 				DevilConfig *pConfig = new DevilConfig( g_OutModMaster.hDllInstance );
+				szPluginName[0] = 0;
 				pConfig->Read(TEXT("sOutputPlugin"), szPluginName, TEXT("out_notsodirect.dll"));
 				delete pConfig;
 
@@ -419,13 +416,13 @@ extern "C" __declspec(dllexport) void __cdecl winampGetOutModeChange(const int m
 				// Load slave dll but check if it's already
 				// been loaded to avoid some duplicate bits
 				BOOL loaded = FALSE;
-				TCHAR szFullpath[MAX_PATH] = { 0 };
+				TCHAR szFullpath[MAX_PATH]/* = { 0 }*/;
 				g_hSlaveInstance = GetOrLoadDll(CombinePath(szFullpath, GetPaths()->winamp_plugin_dir,
 															pszfilename), &loaded, FALSE, NULL, NULL);
 				if( !g_hSlaveInstance )
 				{
 					/*_tcslwr(szPluginName);
-					TCHAR szBuffer[1000] = { 0 };
+					TCHAR szBuffer[1000]/* = { 0 }*//*;
 					PrintfCch(
 						szBuffer, ARRAYSIZE(szBuffer),
 						TEXT("Slave plugin could not be loaded: %s\n"),

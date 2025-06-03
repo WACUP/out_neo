@@ -272,7 +272,8 @@ LRESULT CALLBACK Edit::SubClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 bool DoubleEdit::read_value()
 {
-	TCHAR buf[256] = {0};
+	TCHAR buf[256]/* = {0}*/;
+	buf[0] = 0;
 
 	if (!SendDlgItemMessage(dlg, item, WM_GETTEXT, ARRAYSIZE(buf), (LPARAM)buf))
 	{
@@ -301,7 +302,7 @@ void DoubleEdit::restore_value()
 
 void DoubleEdit::write_value()
 {
-	wchar_t buf[256] = { 0 };
+	wchar_t buf[256]/* = { 0 }*/;
 	PrintfCch(buf, ARRAYSIZE(buf), L"%.4g", value);
 	SetDlgItemText(dlg, item, buf);
 }

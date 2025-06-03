@@ -449,11 +449,21 @@ void outMixer::Config(HWND hwndParent)
 int outMixer::Open(int samplerate, int numchannels, int bitspersamp, int bufferlenms, int prebufferms)
 {
 	// Récupération du chemin complet du plugin actuel
-	TCHAR szFullpath[MAX_PATH] = { 0 }, *pszFullpath = 0;
+	TCHAR szFullpath[MAX_PATH]/* = { 0 }*/, *pszFullpath;
 	if (g_pModSlave && g_pModSlave->hDllInstance)
 	{
-		GetModuleFileName(g_pModSlave->hDllInstance, szFullpath, MAX_PATH - 6 - 1);
-		pszFullpath = (LPWSTR)FindPathFileName(szFullpath);
+		if (GetModuleFileName(g_pModSlave->hDllInstance, szFullpath, MAX_PATH - 6 - 1))
+		{
+			pszFullpath = (LPWSTR)FindPathFileName(szFullpath);
+		}
+		else
+		{
+			pszFullpath = NULL;
+		}
+	}
+	else
+	{
+		pszFullpath = NULL;
 	}
 
 	// Changement de plugin si ce n'est pas le bon
