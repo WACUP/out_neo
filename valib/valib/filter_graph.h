@@ -100,9 +100,9 @@ private:
   NullFilter start;
   NullFilter end;
 
-  int next[graph_nodes + 2];
-  int prev[graph_nodes + 2];
-  Filter *filter[graph_nodes + 2];
+  int next[graph_nodes + 2] = { 0 };
+  int prev[graph_nodes + 2] = { 0 };
+  Filter* filter[graph_nodes + 2] = { 0 };
   enum { ns_ok, ns_dirty, ns_flush, ns_rebuild } node_state[graph_nodes + 2];
 
   /////////////////////////////////////////////////////////
