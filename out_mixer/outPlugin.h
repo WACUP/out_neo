@@ -4,8 +4,8 @@
 class outPlugin : public IOut
 {
 public:
-	outPlugin(void);
-	~outPlugin(void);
+	outPlugin(void) {}
+	~outPlugin(void) {}
 
 	virtual void Config(HWND hwndParent);
 	virtual void About(HWND hwndParent);

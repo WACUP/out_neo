@@ -32,7 +32,7 @@ public:
   Speakers get_user() const;
 
   // Summary information
-  size_t get_info(char *_buf, size_t _len) const;
+  size_t get_info(char *_buf, const size_t _len) const;
 
   /////////////////////////////////////////////////////////////////////////////
   // Filter overrides

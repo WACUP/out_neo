@@ -43,7 +43,7 @@ public:
   int        get_frames()                    const { return parser.get_frames();       }
   int        get_errors()                    const { return parser.get_errors();       }
 
-  size_t     get_info(char *buf, size_t len) const { return parser.get_info(buf, len); }
+  size_t     get_info(char *buf, const size_t len) const { return parser.get_info(buf, len); }
   HeaderInfo header_info()                   const { return parser.header_info();      }
 
   /////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ public:
   int        get_frames()                    const { return parser.get_frames();       }
   int        get_errors()                    const { return parser.get_errors();       }
 
-  size_t     get_info(char *buf, size_t len) const { return parser.get_info(buf, len); }
+  size_t     get_info(char *buf, const size_t len) const { return parser.get_info(buf, len); }
   HeaderInfo header_info()                   const { return parser.header_info();      }
 
   /////////////////////////////////////////////////////////

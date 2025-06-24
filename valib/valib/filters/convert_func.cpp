@@ -65,18 +65,19 @@
 
 #include <math.h>
 #include "convert_func.h"
+#include <emmintrin.h>
 
 #if defined(_DEBUG) || !defined(_M_IX86)
 
-static inline int set_rounding() { return 0; }
-static inline void restore_rounding(int) {}
+/*static inline int set_rounding() { return 0; }
+static inline void restore_rounding(int) {}*/
 
 #define i2s(i) (sample_t(i)+0.5)
-#define s2i(s) int32_t(floor(s))
+#define s2i(s) /*int32_t(floor(s))/*/int32_t(_mm_cvtsd_si32(_mm_load_sd(&s)))/**/
 
 #elif defined(_M_IX86)
 
-static inline int set_rounding()
+/*static inline int set_rounding()
 {
   // Set x87 FPU rounding mode.
   // Returns unchanged FPU control word to restore later.
@@ -102,9 +103,9 @@ static inline void restore_rounding(int r)
 
   uint16_t x87_ctrl = r;
   __asm fldcw [x87_ctrl];
-}
+}*/
 
-static inline sample_t i2s(int32_t i)
+/*static inline sample_t i2s(int32_t i)
 {
   return sample_t(i) + 0.5;
 }
@@ -115,7 +116,9 @@ static inline int32_t s2i(sample_t s)
   __asm fld [s]
   __asm fistp [i]
   return i;
-}
+}/*/
+#define i2s(i) (sample_t(i)+0.5)
+#define s2i(s) int32_t(_mm_cvtsd_si32(_mm_load_sd(&s)))/**/
 
 #endif
 

@@ -2,14 +2,6 @@
 
 extern Out_Module *g_pModSlave;
 
-outPlugin::outPlugin(void)
-{
-}
-
-outPlugin::~outPlugin(void)
-{
-}
-
 void outPlugin::Config(HWND hwndParent)
 {
 	if (g_pModSlave && g_pModSlave->Config)

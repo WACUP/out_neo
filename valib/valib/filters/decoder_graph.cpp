@@ -42,7 +42,7 @@ DecoderGraph::get_user() const
 }
 
 size_t
-DecoderGraph::get_info(char *_buf, size_t _len) const
+DecoderGraph::get_info(char *_buf, const size_t _len) const
 {
   Speakers spk;
   static const size_t buf_size = 2048;

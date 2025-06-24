@@ -166,7 +166,7 @@ ParserFilter::get_parser() const
 }
 
 size_t
-ParserFilter::get_info(char *buf, size_t size) const
+ParserFilter::get_info(char *buf, const size_t size) const
 {
   char info[2048];
   size_t len = 0;

@@ -7,7 +7,7 @@ static const int format_mask =
   FORMAT_MASK_PCMFLOAT | FORMAT_MASK_PCMDOUBLE |
   FORMAT_MASK_LPCM20 | FORMAT_MASK_LPCM24;
 
-AudioProcessor::AudioProcessor(size_t _nsamples)
+AudioProcessor::AudioProcessor(const size_t _nsamples)
 :in_conv(_nsamples), mixer(_nsamples), agc(_nsamples), out_conv(_nsamples)
 {
   dithering = DITHER_AUTO;
@@ -16,7 +16,7 @@ AudioProcessor::AudioProcessor(size_t _nsamples)
 }
 
 size_t
-AudioProcessor::get_info(char *_buf, size_t _len) const
+AudioProcessor::get_info(char *_buf, const size_t _len) const
 {
   return chain.chain_text(_buf, _len);
 }

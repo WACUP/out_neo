@@ -122,12 +122,12 @@ protected:
   bool rebuild_chain();
 
 public:
-  AudioProcessor(size_t nsamples);
+  AudioProcessor(const size_t nsamples);
 
   /////////////////////////////////////////////////////////
   // AudioProcessior interface
 
-  size_t get_info(char *buf, size_t len) const;
+  size_t get_info(char *buf, const size_t len) const;
   bool query_user(Speakers user_spk) const;
   bool set_user(Speakers user_spk);
   Speakers get_user() const;

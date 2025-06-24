@@ -65,7 +65,9 @@ public:
   Syncer         syncer;
 
 public:
-  DVDGraph(int nsamples = 4096, const Sink *sink = 0);
+  // changed with 1.0.13 to use a smaller input so the main vis
+  // is less likely to lag whilst better matching to input data
+  DVDGraph(int nsamples = 512/*/4096/**/, const Sink *sink = 0);
 
   /////////////////////////////////////////////////////////////////////////////
   // DVDGraph interface
@@ -133,7 +135,7 @@ public:
   int get_spdif_status() const;
 
   // Summary information
-  size_t get_info(char *_buf, size_t _len) const;
+  size_t get_info(char *_buf, const size_t _len) const;
 
   /////////////////////////////////////////////////////////////////////////////
   // Filter overrides
