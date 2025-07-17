@@ -477,3 +477,8 @@ extern "C" __declspec(dllexport) void __cdecl winampGetOutModeChange(const int m
 		}
 	}
 }
+
+extern "C" __declspec(dllexport) const Out_Module* ProxiedOutputPlugin(void)
+{
+	return ((g_pModSlave != NULL) ? g_pModSlave : NULL);
+}

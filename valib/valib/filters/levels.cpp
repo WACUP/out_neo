@@ -211,6 +211,7 @@ Levels::on_process()
     {
       max = 0;
       sptr = samples[ch];
+      if (!sptr) break;
       send = sptr + block_size - 7;
       while (sptr < send)
       {
