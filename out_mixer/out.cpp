@@ -338,7 +338,9 @@ INT_PTR CALLBACK MixerConfigProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	return (dlg ? dlg->message(hwnd, uMsg, wParam, lParam) : FALSE);
 }
 
-extern "C" __declspec(dllexport) BOOL __cdecl winampGetOutPrefs(prefsDlgRecW* prefs)
+extern "C" __declspec(dllexport) BOOL __cdecl winampGetOutPrefs(prefsDlgRecW* prefs, const int mode)
+{
+	if (!mode)
 {
 	// this is called when the preferences window is being created
 	// and is used for the delayed registering of a native prefs
@@ -360,6 +362,14 @@ extern "C" __declspec(dllexport) BOOL __cdecl winampGetOutPrefs(prefsDlgRecW* pr
 		prefs->where = 9;
 		prefs->_id = 54;
 		output_prefs = prefs;
+		}
+	}
+	else
+	{
+		if (output_prefs != NULL)
+		{
+			output_prefs = (prefsDlgRecW*)RemovePrefsPage((WPARAM)output_prefs, TRUE);
+		}
 	}
 	return !!output_prefs;
 }

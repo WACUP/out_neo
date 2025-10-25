@@ -815,8 +815,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,14,0
- PRODUCTVERSION 1,0,14,0
+ FILEVERSION 1,0,15,0
+ PRODUCTVERSION 1,0,15,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -833,11 +833,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "WACUP"
             VALUE "FileDescription", "Output Plug-in"
-            VALUE "FileVersion", "1.0.14.0"
+            VALUE "FileVersion", "1.0.15.0"
             VALUE "InternalName", "out_neo.dll"
             VALUE "OriginalFilename", "out_neo.dll"
             VALUE "ProductName", "Not So Neo"
-            VALUE "ProductVersion", "1.0.14.0"
+            VALUE "ProductVersion", "1.0.15.0"
         END
     END
     BLOCK "VarFileInfo"
