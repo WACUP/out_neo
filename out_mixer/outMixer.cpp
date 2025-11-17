@@ -3,6 +3,7 @@
 #include <tchar.h>
 #include <loader/loader/utils.h>
 
+extern outMixer* g_pMixer;
 extern Out_Module *g_pModSlave;
 extern bool switchOutPutPlugin(const TCHAR* path);
 
@@ -494,6 +495,9 @@ int outMixer::Open(int samplerate, int numchannels, int bitspersamp, int bufferl
 		m_pOut = m_pOutPlugin;
 	}
 
+	const int last_numchannels = m_out_spk.nch(),
+			  last_sample_rate = m_out_spk.sample_rate;
+
 	// Réglages input/output
 	m_in_spk = winamp2spk(samplerate, numchannels, bitspersamp);
 	if (m_user_sample_rate == 0)
@@ -506,12 +510,19 @@ int outMixer::Open(int samplerate, int numchannels, int bitspersamp, int bufferl
 	m_dvd_graph.reset();
 	m_dvd_graph.proc.set_input_order(win_order);
 	m_dvd_graph.proc.set_output_order(win_order);
-	m_dvd_graph.set_user(m_out_spk);
 	m_dvd_graph.set_input(m_in_spk);
+	m_dvd_graph.set_user(m_out_spk);
 #ifdef USE_SPDIF
 	m_dvd_graph.set_use_spdif(m_use_spdif);
 #endif
 
+	// if the settings are on as-is for the channel count then we need
+	// to re-initialise things when it changes to avoid playback issue 
+	if ((last_numchannels != m_out_spk.nch()) || (!m_user_sample_rate &&
+						   (last_sample_rate != m_out_spk.sample_rate)))
+	{
+		g_pMixer->ChangeOutput(0, m_out_spk.format, m_in_spk.sample_rate);
+	}
 	return (m_pOut ? m_pOut->Open(m_out_spk, bufferlenms, prebufferms) : -1);
 }
 

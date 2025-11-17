@@ -93,7 +93,7 @@ inline int mode_index(Speakers spk)
 		{
 			switch (spk.mask)
 			{
-				case 0:            return 0;
+				//case 0:            return 0;
 				case MODE_1_0:     return 1;
 				case MODE_2_0:     return 2;
 				case MODE_3_0:     return 3;
@@ -117,7 +117,7 @@ inline int format_index(Speakers spk)
 {
 	switch (spk.format)
 	{
-		case FORMAT_PCM16:    return 0;
+		//case FORMAT_PCM16:    return 0;
 		case FORMAT_PCM24:    return 1;
 		case FORMAT_PCM32:    return 2;
 	}
@@ -142,7 +142,7 @@ inline int rate_index(int rate)
 {
 	switch (rate)
 	{
-		case 0:        return 0;
+		//case 0:        return 0;
 		case 8000:     return 1;
 		case 11025:    return 2;
 		case 22050:    return 3;

@@ -341,27 +341,27 @@ INT_PTR CALLBACK MixerConfigProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 extern "C" __declspec(dllexport) BOOL __cdecl winampGetOutPrefs(prefsDlgRecW* prefs, const int mode)
 {
 	if (!mode)
-{
-	// this is called when the preferences window is being created
-	// and is used for the delayed registering of a native prefs
-	// page to be placed as a child of the 'Output' node (why not)
-	if (prefs)
 	{
-		Init();
+		// this is called when the preferences window is being created
+		// and is used for the delayed registering of a native prefs
+		// page to be placed as a child of the 'Output' node (why not)
+		if (prefs)
+		{
+			Init();
 
-		// need to have this initialised before we try
-		// to do anything with localisation features
-		// TODO
-		StartPluginLangOnly(g_OutModMaster.hDllInstance, OutNotSoNeoLangGUID);
+			// need to have this initialised before we try
+			// to do anything with localisation features
+			// TODO
+			StartPluginLangOnly(g_OutModMaster.hDllInstance, OutNotSoNeoLangGUID);
 
-		// TODO localise
-		prefs->hInst = GetModuleHandle(GetPaths()->wacup_core_dll)/*WASABI_API_LNG_HINST*/;
-		prefs->dlgID = IDD_TABBED_PREFS_DIALOG;// IDD_CONFIG;
-		prefs->name = LngStringDup(IDS_PREFS_NAME);
-		prefs->proc = MixerConfigProc;
-		prefs->where = 9;
-		prefs->_id = 54;
-		output_prefs = prefs;
+			// TODO localise
+			prefs->hInst = GetModuleHandle(GetPaths()->wacup_core_dll)/*WASABI_API_LNG_HINST*/;
+			prefs->dlgID = IDD_TABBED_PREFS_DIALOG;// IDD_CONFIG;
+			prefs->name = LngStringDup(IDS_PREFS_NAME);
+			prefs->proc = MixerConfigProc;
+			prefs->where = 9;
+			prefs->_id = 54;
+			output_prefs = prefs;
 		}
 	}
 	else
