@@ -496,10 +496,24 @@ int outMixer::Open(int samplerate, int numchannels, int bitspersamp, int bufferl
 	}
 
 	const int last_numchannels = m_out_spk.nch(),
+			  last_bitspersample = spk2bps(m_out_spk),
 			  last_sample_rate = m_out_spk.sample_rate;
 
 	// Réglages input/output
 	m_in_spk = winamp2spk(samplerate, numchannels, bitspersamp);
+
+	// if the settings are on as-is for the channel count then we need
+	// to re-initialise things when it changes to avoid playback issue
+	// as well as if the bps of the input has changed vs the output
+	if ((last_numchannels != m_out_spk.nch()) ||
+		(last_numchannels != numchannels) ||
+		(last_bitspersample != bitspersamp) ||
+		(!m_user_sample_rate && (last_sample_rate != m_out_spk.sample_rate)))
+	{
+		g_pMixer->ChangeOutput(0, ((last_bitspersample != bitspersamp) ?
+						  m_out_spk.format : -1), m_in_spk.sample_rate);
+	}
+
 	if (m_user_sample_rate == 0)
 		m_out_spk.sample_rate = samplerate;
 
@@ -516,13 +530,6 @@ int outMixer::Open(int samplerate, int numchannels, int bitspersamp, int bufferl
 	m_dvd_graph.set_use_spdif(m_use_spdif);
 #endif
 
-	// if the settings are on as-is for the channel count then we need
-	// to re-initialise things when it changes to avoid playback issue 
-	if ((last_numchannels != m_out_spk.nch()) || (!m_user_sample_rate &&
-						   (last_sample_rate != m_out_spk.sample_rate)))
-	{
-		g_pMixer->ChangeOutput(0, m_out_spk.format, m_in_spk.sample_rate);
-	}
 	return (m_pOut ? m_pOut->Open(m_out_spk, bufferlenms, prebufferms) : -1);
 }
 
