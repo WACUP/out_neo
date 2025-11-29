@@ -6,8 +6,10 @@ DVDGraph::DVDGraph(int _nsamples, const Sink *_sink)
 {
   user_spk = Speakers(FORMAT_PCM16, 0, 0);
 
-  use_spdif = false;
+#ifdef USE_SPDIF
   use_detector = false;
+
+  use_spdif = false;
   spdif_pt = FORMAT_MASK_AC3;
   spdif_as_pcm = false;
   spdif_encode = true;
@@ -21,6 +23,7 @@ DVDGraph::DVDGraph(int _nsamples, const Sink *_sink)
 
   spdif_status = SPDIF_MODE_NONE;
   spdif_err = SPDIF_MODE_NONE;
+#endif
 
   sink = _sink;
   query_sink = true;
@@ -90,7 +93,7 @@ DVDGraph::set_query_sink(bool _query_sink)
   rebuild_node(state_detector);
 }
 
-
+#ifdef USE_SPDIF
 ///////////////////////////////////////////////////////////
 // SPDIF options
 
@@ -114,10 +117,12 @@ void
 DVDGraph::set_spdif(bool _use_spdif, int _spdif_pt, bool _spdif_as_pcm, bool _spdif_encode, bool _spdif_stereo_pt)
 {
   use_spdif = _use_spdif;
+#ifdef USE_SPDIF
   spdif_pt = _spdif_pt;
   spdif_as_pcm = _spdif_as_pcm;
   spdif_encode = _spdif_encode;
   spdif_stereo_pt = _spdif_stereo_pt;
+#endif
   invalidate_chain();
   rebuild_node(state_detector);
 }
@@ -271,6 +276,7 @@ DVDGraph::set_spdif_allow_32(bool _spdif_allow_32)
   invalidate_chain();
   rebuild_node(state_detector);
 }
+#endif
 
 ///////////////////////////////////////////////////////////
 // SPDIF/DTS mode
@@ -469,10 +475,10 @@ DVDGraph::get_info(char *_buf, size_t _len) const
 void 
 DVDGraph::reset()
 {
+#ifdef USE_SPDIF
   spdif_status = use_spdif? SPDIF_MODE_NONE: SPDIF_MODE_DISABLED;
   spdif_err = use_spdif? SPDIF_MODE_NONE: SPDIF_MODE_DISABLED;
 
-#ifdef USE_SPDIF
   demux.reset();
   detector.reset();
   despdifer.reset();
@@ -613,12 +619,10 @@ DVDGraph::get_next(int node, Speakers spk) const
 #ifdef USE_SPDIF
       if (demux.query_input(spk)) 
         return state_demux;
-#endif
 
       if (use_detector && spk.format == FORMAT_PCM16 && spk.mask == MODE_STEREO)
         return state_detector;
 
-#ifdef USE_SPDIF
       if (despdifer.query_input(spk))
         return state_despdif;
 #endif
@@ -714,7 +718,7 @@ DVDGraph::get_next(int node, Speakers spk) const
     /////////////////////////////////////////////////////
     // state_spdif_pt -> state_dejitter
     // state_spdif_pt -> state_decode
-
+#ifdef USE_SPDIF
     case state_spdif_pt:
       // Spdifer may return return high-bitrare DTS stream
       // that is impossible to passthrough
@@ -725,7 +729,7 @@ DVDGraph::get_next(int node, Speakers spk) const
         return state_spdif2pcm;
       else
         return state_dejitter;
-
+#endif
     /////////////////////////////////////////////////////
     // state_decode -> state_proc
     // state_decode -> state_proc_enc
@@ -763,13 +767,13 @@ DVDGraph::get_next(int node, Speakers spk) const
     /////////////////////////////////////////////////////
     // state_spdif_enc -> state_decode
     // state_spdif_enc -> state_dejitter
-
+#ifdef USE_SPDIF
     case state_spdif_enc:
       if (spdif_as_pcm)
         return state_spdif2pcm;
       else
         return state_dejitter;
-
+#endif
     /////////////////////////////////////////////////////
     // state_spdif2pcm -> state_dejitter
 
@@ -792,10 +796,12 @@ int
 DVDGraph::check_spdif_passthrough(Speakers _spk) const
 {
   // SPDIF-1 check (passthrough)
-
+#ifdef USE_SPDIF
   if (!use_spdif)
+#endif
     return SPDIF_MODE_DISABLED;
 
+#ifdef USE_SPDIF
   // check format
   if ((spdif_pt & FORMAT_MASK(_spk.format)) == 0)
     return SPDIF_ERR_FORMAT;
@@ -813,16 +819,19 @@ DVDGraph::check_spdif_passthrough(Speakers _spk) const
       return SPDIF_ERR_SINK;
 
   return SPDIF_MODE_PASSTHROUGH;
+#endif
 }
 
 int
 DVDGraph::check_spdif_encode(Speakers _spk) const
 {
   // SPDIF-2 check (encode)
-
+#ifdef USE_SPDIF
   if (!use_spdif)
+#endif
     return SPDIF_MODE_DISABLED;
 
+#ifdef USE_SPDIF
   if (!spdif_encode)
     return SPDIF_ERR_ENCODER_DISABLED;
 
@@ -845,9 +854,7 @@ DVDGraph::check_spdif_encode(Speakers _spk) const
       return SPDIF_ERR_SAMPLE_RATE;
 
   // check encoder
-#ifdef USE_SPDIF
   if (!enc.query_input(enc_spk))
-#endif
     return SPDIF_ERR_ENCODER;
 
   // check sink
@@ -856,6 +863,7 @@ DVDGraph::check_spdif_encode(Speakers _spk) const
       return SPDIF_ERR_SINK;
 
   return SPDIF_MODE_ENCODE;
+#endif
 }
 
 Speakers

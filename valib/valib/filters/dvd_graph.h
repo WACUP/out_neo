@@ -55,8 +55,19 @@ public:
   Despdifer      despdifer;
   Spdifer        spdifer_pt;
 #endif
+
+#ifdef _WIN64
+protected:
+#ifdef USE_SPDIF
+    bool     use_detector;
+#endif
+    bool     query_sink;
+#endif
+
+public:
   AudioDecoder   dec;
   AudioProcessor proc;
+
 #ifdef USE_SPDIF
   AC3Enc         enc;
   Spdifer        spdifer_enc;
@@ -84,8 +95,9 @@ public:
   bool get_query_sink() const;
   void set_query_sink(bool query_sink);
 
-  // Detector usage
 
+#ifdef USE_SPDIF
+  // Detector usage
   bool get_use_detector() const;
   void set_use_detector(bool use_detector);
 
@@ -124,6 +136,7 @@ public:
 
   bool get_spdif_allow_32() const;
   void set_spdif_allow_32(bool spdif_allow_32);
+#endif
 
   // SPDIF/DTS mode/conversion
   int  get_dts_mode() const;
@@ -143,27 +156,35 @@ public:
   virtual void reset();
 
 protected:
-  Speakers user_spk;
-
+  const    Sink* sink;
+#ifndef _WIN64
+#ifdef USE_SPDIF
   bool     use_detector;
+#endif
+  bool     query_sink;
+#endif
 
+  Speakers user_spk;
+#ifdef USE_SPDIF
   bool     use_spdif;
-  int      spdif_pt;
   bool     spdif_as_pcm;
   bool     spdif_encode;
   bool     spdif_stereo_pt;
+
+  int      spdif_pt;
+#endif
+
+#ifdef USE_SPDIF
   int      spdif_bitrate;
 
   bool     spdif_check_sr;
   bool     spdif_allow_48;
   bool     spdif_allow_44;
   bool     spdif_allow_32;
+#endif
 
   int      spdif_status;
   mutable int spdif_err;
-
-  const Sink *sink;
-  bool query_sink;
 
   enum state_t 
   { 

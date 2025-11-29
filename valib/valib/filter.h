@@ -148,13 +148,13 @@ public:
   Speakers  spk;
 
   uint8_t  *rawdata;
-  samples_t samples;
   size_t    size;
+  samples_t samples;
 
-  bool      sync;
-  vtime_t   time;
-            
   bool      eos;
+  bool      sync;
+
+  vtime_t   time;
 
   /////////////////////////////////////////////////////////
   // Utilities
@@ -163,9 +163,9 @@ public:
     spk(spk_unknown),
     rawdata(0),
     size(0),
+    eos(false),
     sync(false),
-    time(0),
-    eos(false)
+    time(0)
   {
     samples.zero();
   }
@@ -201,9 +201,9 @@ public:
     rawdata = 0;
     samples.zero();
     size = 0;
+    eos = false;
     sync = false;
     time = 0;
-    eos = false;
   }
   
   inline void set_empty(Speakers _spk, 
@@ -213,9 +213,9 @@ public:
     rawdata = 0;
     samples.zero();
     size = 0;
+    eos = _eos;
     sync = _sync;
     time = _time;
-    eos = _eos;
   }
 
   inline void set_linear(Speakers _spk, samples_t _samples, size_t _size,
@@ -228,9 +228,9 @@ public:
     rawdata = 0;
     samples = _samples;
     size = _size;
+    eos = _eos;
     sync = _sync;
     time = _time;
-    eos = _eos;
   }
 
   inline void set_rawdata(Speakers _spk, uint8_t *_rawdata, size_t _size,
@@ -551,21 +551,22 @@ public:
 // ==============
 // todo...
 
-
+#pragma pack(push, 2)
 class NullFilter : public Filter
 {
 protected:
   Speakers  spk;
 
-  bool      sync;
   vtime_t   time;
-  bool      flushing;
 
   uint8_t  *rawdata;
   samples_t samples;
   size_t    size;
 
   int       format_mask;
+
+  bool      sync;
+  bool      flushing;
 
   virtual void on_reset() {};
   virtual bool on_process() { return true; };
@@ -718,7 +719,7 @@ public:
     return true;
   };
 };
-
+#pragma pack(pop)
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -29,7 +29,7 @@ protected:
   Speakers out_spk;          // output format
   state_t  state;            // filter state
   bool     new_stream;       // new stream found
-  int      errors;           // number of parsing errors
+  short int errors;          // number of parsing errors
 
   bool load_parse_frame();
   void send_frame(Chunk *chunk);

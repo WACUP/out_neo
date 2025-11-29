@@ -10,13 +10,16 @@
 
 #define STAT_SIZE 64
 
+#pragma pack(push, 8)
 class Syncer : public NullFilter
 {
 protected:
+  bool    continuous_sync;
+  bool    dejitter;
+
   double size2time;
 
   // continious time
-  bool    continuous_sync;
   vtime_t continuous_time;
 
   // linear time transform
@@ -24,7 +27,6 @@ protected:
   vtime_t time_factor;
 
   // jitter correction
-  bool    dejitter;
   vtime_t threshold;
 
   // statistics
@@ -96,5 +98,6 @@ public:
 
   bool get_chunk(Chunk *_chunk);
 };
+#pragma pack(pop)
 
 #endif

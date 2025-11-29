@@ -6,7 +6,7 @@
 #include "spk.h"
 #include <winamp/out.h>
 
-#define PLUGIN_VERSION L"1.1"
+#define PLUGIN_VERSION L"1.1.3"
 #define PLUGIN_NAME TEXT("Not So Neo v") PLUGIN_VERSION
 #define PLUGIN_ID 424242
 
@@ -88,7 +88,7 @@ public:
 
 inline Speakers winamp2spk(const int sr, const int nch, const int bps)
 {
-	int format = FORMAT_PCM16;
+	short format = FORMAT_PCM16;
 	int mask = MODE_2_0;
 
 	switch (bps)

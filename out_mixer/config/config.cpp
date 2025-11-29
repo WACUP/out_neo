@@ -258,7 +258,7 @@ void ConfigDlg::switch_on()
 #ifdef LEGACY_CODE
 	SetTimer(hwnd, 1, refresh_time, 0);	// for all dynamic controls
 #else
-	SetTimer(hwnd, 1, m_outMixer->get_RefreshTime(), 0);	// for all dynamic controls
+	SetTimer(hwnd, 1, 16/*/m_outMixer->get_RefreshTime()/**/, 0);	// for all dynamic controls
 #endif
 
 	TabSheet::switch_on();
@@ -943,9 +943,9 @@ void ConfigDlg::command(int control, int message)
 #ifdef USE_SPDIF
 				if (GetDlgItem(hwnd, IDC_CHK_USE_SPDIF))
 					use_spdif = IsDlgButtonChecked(hwnd, IDC_CHK_USE_SPDIF) == BST_CHECKED;
-				m_outMixer->ChangeOutput(ispk, ifmt, rate, use_spdif);
+				m_outMixer->ChangeOutput(ispk, ifmt, rate, use_spdif, true);
 #else
-				m_outMixer->ChangeOutput(ispk, ifmt, rate);
+				m_outMixer->ChangeOutput(ispk, ifmt, rate, true);
 #endif
 				update();
 			}

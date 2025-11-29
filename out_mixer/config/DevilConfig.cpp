@@ -180,6 +180,12 @@ bool DevilConfig::Read( const TCHAR * szKey, int * iOut, const int iDefault )
 	return true;
 }
 
+bool DevilConfig::Read( const TCHAR * szKey, short int * iOut, const int iDefault )
+{
+	*iOut = ( GetPrivateProfileInt( szSection, szKey, iDefault, szIniPath ) & 0xFFFF );
+	return true;
+}
+
 // *****************************************************************************
 bool DevilConfig::Read( const TCHAR * szKey, TCHAR * szOut, const TCHAR * szDefault, UINT uSize )
 {

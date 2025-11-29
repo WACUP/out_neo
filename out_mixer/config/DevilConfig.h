@@ -47,6 +47,7 @@ public:
 
 	bool Read( const TCHAR * szKey, double * fOut, const double fDefault );
 	bool Read( const TCHAR * szKey, int * iOut, const int iDefault );
+	bool Read( const TCHAR * szKey, short int * iOut, const int iDefault );
 	bool Read( const TCHAR * szKey, TCHAR * szOut, const TCHAR * szDefault, UINT uSize = 256 );
 
 #if 0

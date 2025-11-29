@@ -97,8 +97,9 @@ protected:
   Speakers out_spk;  // actual output format
 
   // dithering
-
+#ifndef _WIN64
   int dithering;
+#endif
   double dithering_level() const;
   
   // filters
@@ -120,6 +121,10 @@ protected:
 
   FilterChain chain;
   bool rebuild_chain();
+
+#ifdef _WIN64
+  int dithering;
+#endif
 
 public:
   AudioProcessor(const size_t nsamples);

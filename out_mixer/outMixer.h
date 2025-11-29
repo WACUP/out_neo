@@ -15,6 +15,13 @@ class outMixer : public IOut
 {
 private:
 	outPlugin *m_pOutPlugin;
+
+public:
+#ifndef _WIN64
+	DevilConfig* m_pConfig;
+#endif
+
+private:
 #ifdef USE_SPDIF
 	outDsound *m_pOutDsound;
 #endif
@@ -29,7 +36,7 @@ private:
 	virtual int Open(Speakers spk, const int bufferlenms, const int prebufferms) { return 0; }
 
 	//config
-	TCHAR m_out_plugin[MAX_PATH];
+	TCHAR m_out_plugin[32];
 	int m_user_sample_rate;
 #ifdef USE_SPDIF
 	bool m_use_spdif;
@@ -37,17 +44,22 @@ private:
 #endif
 	bool m_invert_levels;
 	bool m_outputchanged;
+	bool m_output_as_is;
+	char m_output_mode;
+#ifdef LEGACY_CODE
 	int m_refresh_time;
-	int m_output_mode;
+#endif
 
-	void ReadConfig();
-	void WriteConfig();
+	void ReadConfig(void);
+	void WriteConfig(void);
 
 public:
 	outMixer(void);
 	~outMixer(void);
 
+#ifdef _WIN64
 	DevilConfig *m_pConfig;
+#endif
 
 	virtual void Config(HWND hwndParent);
 	virtual int Open(const int samplerate, const int numchannels, const int bitspersamp,
@@ -74,14 +86,16 @@ public:
 	inline void set_SpdifCloseAtEnd(bool value) { m_spdif_close_at_end = value; }
 #endif
 	inline bool get_InvertLevels() { return m_invert_levels; }
-	inline int get_RefreshTime() { return m_refresh_time; }
 	inline void set_InvertLevels(bool value) { m_invert_levels = value; }
+#ifdef LEGACY_CODE
+	inline int get_RefreshTime() { return m_refresh_time; }
 	inline void set_RefreshTime(int value) { m_refresh_time = value; }
+#endif
 
 #ifdef USE_SPDIF
-	void ChangeOutput(const int ispk, const int ifmt, const int rate, const bool use_spdif);
+	void ChangeOutput(const int ispk, const int ifmt, const int rate, const bool use_spdif, const bool update_as_is);
 #else
-	void ChangeOutput(const int ispk, const int ifmt, const int rate);
+	void ChangeOutput(const int ispk, const int ifmt, const int rate, const bool update_as_is);
 #endif
 	void set_OutputPlugin(const TCHAR *path);
 	const TCHAR* get_OutputPlugin(void);

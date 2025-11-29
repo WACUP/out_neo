@@ -49,7 +49,7 @@ outMixer::~outMixer(void)
 ////////////////////////////////////////////////////////////////////////////////
 //  ReadConfig
 ////////////////////////////////////////////////////////////////////////////////
-void outMixer::ReadConfig()
+void outMixer::ReadConfig(void)
 {
 	if( !m_pConfig ) return;
 
@@ -62,6 +62,8 @@ void outMixer::ReadConfig()
 
 	// Output
 	m_pConfig->Read(TEXT("iOutputMode"), &m_out_spk.mask, MODE_2_0);
+	m_output_as_is = (m_out_spk.mask == MODE_UNDEFINED);
+
 	m_pConfig->Read(TEXT("iOutputRelation"), &m_out_spk.relation, NO_RELATION);
 	m_pConfig->Read(TEXT("iOutputFormat"), &m_out_spk.format, FORMAT_PCM16);
 	m_pConfig->Read(TEXT("iOutputRate"), &m_out_spk.sample_rate, 44100);
@@ -75,8 +77,10 @@ void outMixer::ReadConfig()
 	// Interface
 	m_pConfig->Read(TEXT("bInvertLevels"), &iRes, 0);
 	m_invert_levels = (iRes==1);
-	m_pConfig->Read(TEXT("iRefreshTime"), &iRes, 125);
+#ifdef LEGACY_CODE
+	m_pConfig->Read(TEXT("iRefreshTime"), &iRes, 125/2);
 	m_refresh_time = iRes;
+#endif
 
 	// AGC options
 	m_pConfig->Read(TEXT("bAutoGain"), &iRes, 1);
@@ -95,7 +99,7 @@ void outMixer::ReadConfig()
 	m_dvd_graph.proc.set_drc_power(dRes);
 
 	// Gain
-	m_pConfig->Read(TEXT("dGainMaster"), &dRes, 1);
+	m_pConfig->Read(TEXT("dGainMaster"), &dRes, 0.9885530946569389);
 	m_dvd_graph.proc.set_master(dRes);
 	m_pConfig->Read(TEXT("dGainVoice"), &dRes, 1);
 	m_dvd_graph.proc.set_clev(dRes);
@@ -282,7 +286,7 @@ void outMixer::ReadConfig()
 ////////////////////////////////////////////////////////////////////////////////
 //  WriteConfig
 ////////////////////////////////////////////////////////////////////////////////
-void outMixer::WriteConfig()
+void outMixer::WriteConfig(void)
 {
 	if( !m_pConfig ) return;
 
@@ -307,7 +311,9 @@ void outMixer::WriteConfig()
 
 	// Interface
 	m_pConfig->Write(TEXT("bInvertLevels"), (int)m_invert_levels);
+#ifdef LEGACY_CODE
 	m_pConfig->Write(TEXT("iRefreshTime"), m_refresh_time);
+#endif
 
 	// AGC options
 	m_pConfig->Write(TEXT("bAutoGain"), (int)m_dvd_graph.proc.get_auto_gain());
@@ -505,13 +511,12 @@ int outMixer::Open(int samplerate, int numchannels, int bitspersamp, int bufferl
 	// if the settings are on as-is for the channel count then we need
 	// to re-initialise things when it changes to avoid playback issue
 	// as well as if the bps of the input has changed vs the output
-	if ((last_numchannels != m_out_spk.nch()) ||
-		(last_numchannels != numchannels) ||
-		(last_bitspersample != bitspersamp) ||
-		(!m_user_sample_rate && (last_sample_rate != m_out_spk.sample_rate)))
+	const bool changed_bps = (last_bitspersample != bitspersamp);
+	if (m_output_as_is && ((last_numchannels != m_out_spk.nch()) || (last_numchannels != numchannels)) ||
+					 changed_bps || (!m_user_sample_rate && (last_sample_rate != m_out_spk.sample_rate)))
 	{
-		g_pMixer->ChangeOutput(0, ((last_bitspersample != bitspersamp) ?
-						  m_out_spk.format : -1), m_in_spk.sample_rate);
+		g_pMixer->ChangeOutput((m_output_as_is ? 0 : spk2nch(m_out_spk)), (changed_bps
+							   ? m_out_spk.format : -1), m_in_spk.sample_rate, false);
 	}
 
 	if (m_user_sample_rate == 0)
@@ -647,14 +652,19 @@ int outMixer::GetWrittenTime(void)
 //  ChangeOutput
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef USE_SPDIF
-void outMixer::ChangeOutput(const int ispk, const int ifmt, const int rate, const bool use_spdif)
+void outMixer::ChangeOutput(const int ispk, const int ifmt, const int rate, const bool use_spdif, const bool update_as_is)
 #else
-void outMixer::ChangeOutput(const int ispk, const int ifmt, const int rate)
+void outMixer::ChangeOutput(const int ispk, const int ifmt, const int rate, const bool update_as_is)
 #endif
 {
-	int format = FORMAT_PCM16;
+	short int format = FORMAT_PCM16;
 	int mask = MODE_STEREO;
-	int relation = NO_RELATION;
+	short int relation = NO_RELATION;
+
+	if (update_as_is)
+	{
+		m_output_as_is = !ispk;
+	}
 
 	switch (ispk)
 	{
@@ -711,7 +721,7 @@ const TCHAR* outMixer::get_OutputPlugin(void)
 {
 	if (!m_out_plugin[0])
 	{
-		m_pConfig->Read(TEXT("sOutputPlugin"), m_out_plugin, TEXT("out_notsodirect.dll"));
+		m_pConfig->Read(TEXT("sOutputPlugin"), m_out_plugin, TEXT("out_notsodirect.dll"), ARRAYSIZE(m_out_plugin));
 	}
 	return m_out_plugin;
 }
