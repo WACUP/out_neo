@@ -38,13 +38,15 @@ private:
 	//config
 	TCHAR m_out_plugin[32];
 	int m_user_sample_rate;
+	short int m_user_format;
 #ifdef USE_SPDIF
-	bool m_use_spdif;
-	bool m_spdif_close_at_end;
+	bool m_use_spdif : 1;
+	bool m_spdif_close_at_end : 1;
 #endif
-	bool m_invert_levels;
-	bool m_outputchanged;
-	bool m_output_as_is;
+	bool m_invert_levels : 1;
+	bool m_outputchanged : 1;
+	bool m_output_as_is : 1;
+	bool m_format_as_is : 1;
 	char m_output_mode;
 #ifdef LEGACY_CODE
 	int m_refresh_time;
@@ -80,6 +82,7 @@ public:
 	inline void get_Input(Speakers *spk) { if (spk) *spk = m_in_spk; }
 	inline void get_Output(Speakers *spk) { if (spk) *spk = m_out_spk; }
 	inline int get_SampleRate() { return m_user_sample_rate; }
+	inline int get_Format() { return m_user_format; }
 #ifdef USE_SPDIF
 	inline bool get_UseSpdif() { return m_use_spdif; }
 	inline bool get_SpdifCloseAtEnd() { return m_spdif_close_at_end; }

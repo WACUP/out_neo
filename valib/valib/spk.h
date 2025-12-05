@@ -290,10 +290,10 @@ public:
   inline bool is_floating_point() const;
   inline bool is_spdif() const;
 
-  inline int  nch()   const;
+  inline short int  nch()   const;
   inline bool lfe()   const;
 
-  inline const int *order() const;
+  inline const short int *order() const;
 
   inline int  sample_size() const;
 
@@ -345,22 +345,22 @@ struct samples_t
 // Speakers class inlines
 ///////////////////////////////////////////////////////////////////////////////
 
-extern const int sample_size_tbl[32];
-extern const int mask_nch_tbl[64];
-extern const int mask_order_tbl[64][6];
+extern const short int sample_size_tbl[32];
+extern const short int mask_nch_tbl[64];
+extern const short int mask_order_tbl[64][6];
 extern const char *mode_text[64];
 
-inline int sample_size(int format)
+inline short int sample_size(int format)
 {
   return sample_size_tbl[format & 0x1f];
 }
 
-inline int mask_nch(int mask)
+inline short int mask_nch(int mask)
 {
   return mask_nch_tbl[mask & 0x3f];
 }
 
-inline const int *mask_order(int mask)
+inline const short int *mask_order(int mask)
 {
   return mask_order_tbl[mask & 0x3f];
 }
@@ -416,7 +416,7 @@ inline bool Speakers::is_floating_point() const
 inline bool Speakers::is_spdif() const
 { return format == FORMAT_SPDIF; }
 
-inline int Speakers::nch() const
+inline short int Speakers::nch() const
 { return mask_nch(mask); }
 
 inline bool 
@@ -425,7 +425,7 @@ Speakers::lfe() const
   return (mask & CH_MASK_LFE) != 0;
 }
 
-inline const int *
+inline const short int *
 Speakers::order() const
 {
   return ::mask_order(mask);

@@ -42,6 +42,7 @@ const int matrix_controls[6][6] =
 ///////////////////////////////////////////////////////////////////////////////
 // Tools
 ///////////////////////////////////////////////////////////////////////////////
+#ifndef _UNICODDE
 inline void cr2crlf(char *_buf, int _size)
 {
 	int cnt = 0;
@@ -69,6 +70,7 @@ inline void cr2crlf(char *_buf, int _size)
 			*dst-- = '\r';
 	}
 }
+#endif
 
 const TCHAR *spklist[] = 
 {
@@ -83,7 +85,7 @@ const TCHAR *spklist[] =
 	TEXT("Dolby ProLogic II")
 };
 
-inline int mode_index(Speakers spk)
+inline int mode_index(const Speakers spk)
 {
 	switch (spk.relation)
 	{
@@ -108,18 +110,19 @@ inline int mode_index(Speakers spk)
 
 const TCHAR *fmtlist[] = 
 {
+	TEXT("AS IS"),
 	TEXT("16-bit"),
 	TEXT("24-bit"),
 	TEXT("32-bit")
 };
 
-inline int format_index(Speakers spk)
+inline int format_index(const int format)
 {
-	switch (spk.format)
+	switch (format)
 	{
-		//case FORMAT_PCM16:    return 0;
-		case FORMAT_PCM24:    return 1;
-		case FORMAT_PCM32:    return 2;
+		case FORMAT_PCM16:    return 1;
+		case FORMAT_PCM24:    return 2;
+		case FORMAT_PCM32:    return 3;
 	}
 	return 0;
 }
@@ -134,6 +137,7 @@ const TCHAR *ratelist[] =
 	TEXT("32 kHz"),
 	TEXT("44.1 kHz"),
 	TEXT("48 kHz"),
+	TEXT("88.2 kHz"),
 	TEXT("96 kHz"),
 	TEXT("192 kHz")
 };
@@ -142,7 +146,6 @@ inline int rate_index(int rate)
 {
 	switch (rate)
 	{
-		//case 0:        return 0;
 		case 8000:     return 1;
 		case 11025:    return 2;
 		case 22050:    return 3;
@@ -150,8 +153,9 @@ inline int rate_index(int rate)
 		case 32000:    return 5;
 		case 44100:    return 6;
 		case 48000:    return 7;
-		case 96000:    return 8;
-		case 192000:   return 9;
+		case 88200:    return 8;
+		case 96000:    return 9;
+		case 192000:   return 10;
 	}
 	return 0;
 }
@@ -166,7 +170,7 @@ const TCHAR *units_list[] =
 	TEXT("Inches")
 };
 
-inline int unit_index(int units)
+inline int unit_index(const int units)
 {
 	switch (units)
 	{
@@ -180,7 +184,7 @@ inline int unit_index(int units)
 	};
 }
 
-inline int unit_from_index(int index)
+inline int unit_from_index(const int index)
 {
 	switch (index)
 	{
@@ -194,13 +198,14 @@ inline int unit_from_index(int index)
 	};
 }
 
+#ifdef USE_SPDIF
 const int bitrate_list[] =
 {
    32,  40,  48,  56,  64,  80,  96, 112, 128, 
   160, 192, 224, 256, 320, 384, 448, 512, 576, 640 
 };
 
-inline int bitrate_index(int bitrate)
+inline int bitrate_index(const int bitrate)
 {
 	bitrate /= 1000;
 	for (int i = 0; i < ARRAYSIZE(bitrate_list); i++)
@@ -209,13 +214,14 @@ inline int bitrate_index(int bitrate)
 	return ARRAYSIZE(bitrate_list) - 1;
 }
 
-inline int bitrate_from_index(int index)
+inline int bitrate_from_index(const int index)
 {
 	if (index >= 0 && index < ARRAYSIZE(bitrate_list))
 		return bitrate_list[index] * 1000;
 	else
 		return 448000; // default bitrate
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Initialization / Deinitialization
@@ -437,9 +443,9 @@ void ConfigDlg::init_controls()
 
 	/////////////////////////////////////
 	// Build and environment info
-	TCHAR info[32]/* = {0}*/;
+	/*TCHAR info[32]/* = {0}*//*;
 
-	/*_tcsncpy(info, valib_build_info(), ARRAYSIZE(info));
+	_tcsncpy(info, valib_build_info(), ARRAYSIZE(info));
 	info[ARRAYSIZE(info)-1] = 0;
 	cr2crlf(info, ARRAYSIZE(info));
 	SetDlgItemText(hwnd, IDC_EDT_ENV, info);
@@ -566,6 +572,7 @@ void ConfigDlg::init_controls()
 		for (int j = 0; j < 6; j++)
 			edt_matrix[i][j].link(hwnd, matrix_controls[i][j]);
 
+#ifdef USE_SPDIF
 	/////////////////////////////////////
 	// SPDIF
 	SendDlgItemMessage(hwnd, IDC_CMB_SPDIF_BITRATE, CB_RESETCONTENT, 0, 0);
@@ -575,6 +582,7 @@ void ConfigDlg::init_controls()
 		SendDlgItemMessage(hwnd, IDC_CMB_SPDIF_BITRATE, CB_ADDSTRING, 0,
 			(LPARAM)_itot(bitrate_list[i], info, 10)), bitrate_list[i]);
 	}
+#endif
 }
 
 void ConfigDlg::reload_state()
@@ -668,12 +676,10 @@ void ConfigDlg::reload_state()
 
 void ConfigDlg::update_static_controls()
 {
-	int ch;
-
 	/////////////////////////////////////
 	// Speakers
 	SendDlgItemMessage(hwnd, IDC_CMB_SPK,    CB_SETCURSEL, mode_index(out_spk), 0);
-	SendDlgItemMessage(hwnd, IDC_CMB_FORMAT, CB_SETCURSEL, format_index(out_spk), 0);
+	SendDlgItemMessage(hwnd, IDC_CMB_FORMAT, CB_SETCURSEL, format_index(m_outMixer->get_Format()), 0);
 	SendDlgItemMessage(hwnd, IDC_CMB_RATE,	 CB_SETCURSEL, rate_index(m_outMixer->get_SampleRate()), 0);
 #ifdef USE_SPDIF
 	CheckDlgButton(hwnd, IDC_CHK_USE_SPDIF, use_spdif ? BST_CHECKED : BST_UNCHECKED);
@@ -716,7 +722,7 @@ void ConfigDlg::update_static_controls()
 
 	/////////////////////////////////////
 	// I/O Gains
-	for (ch = 0; ch < NCHANNELS; ch++)
+	for (int ch = 0; ch < NCHANNELS; ch++)
 	{
 		SendDlgItemMessage(hwnd, idc_slider_in[ch],  TBM_SETPOS, TRUE, long(-value2db(input_gains[ch])  * ticks));
 		SendDlgItemMessage(hwnd, idc_slider_out[ch], TBM_SETPOS, TRUE, long(-value2db(output_gains[ch]) * ticks));
@@ -726,7 +732,7 @@ void ConfigDlg::update_static_controls()
 
 	/////////////////////////////////////
 	// Delay
-	for (ch = 0; ch < NCHANNELS; ch++)
+	for (int ch = 0; ch < NCHANNELS; ch++)
 	{
 		edt_delay[ch].update_value(delays[ch]);
 		edt_delay[ch].enable(delay);
@@ -935,7 +941,11 @@ void ConfigDlg::command(int control, int message)
 		case IDC_CHK_USE_SPDIF:
 #endif
 		{
+#ifdef USE_SPDIF
 			if (control == IDC_CHK_USE_SPDIF || message == CBN_SELENDOK)
+#else
+			if (message == CBN_SELENDOK)
+#endif
 			{
 				const int ispk = (const int)SendDlgItemMessage(hwnd, IDC_CMB_SPK, CB_GETCURSEL, 0, 0),
 						  ifmt = (const int)SendDlgItemMessage(hwnd, IDC_CMB_FORMAT, CB_GETCURSEL, 0, 0),

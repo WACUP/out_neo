@@ -50,10 +50,10 @@ extern const Speakers spk_rawdata = Speakers(FORMAT_RAWDATA, 0, 0, 0, 0);
 // Constants for common channel orders
 ///////////////////////////////////////////////////////////////////////////////
 
-extern const int std_order[NCHANNELS] = 
+extern const int std_order[NCHANNELS] =
 { 0, 1, 2, 3, 4, 5 };
 
-extern const int win_order[NCHANNELS] = 
+extern const int win_order[NCHANNELS] =
 { CH_L, CH_R, CH_C, CH_LFE, CH_SL, CH_SR };
 
 
@@ -61,7 +61,7 @@ extern const int win_order[NCHANNELS] =
 // Tables for Speakers class
 ///////////////////////////////////////////////////////////////////////////////
 
-extern const int sample_size_tbl[32] = 
+extern const short int sample_size_tbl[32] =
 {
   0,
   sizeof(sample_t), 
@@ -84,7 +84,7 @@ extern const int sample_size_tbl[32] =
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-extern const int mask_nch_tbl[64] = 
+extern const short int mask_nch_tbl[64] =
 {
   0, 1, 1, 2, 1, 2, 2, 3, 
   1, 2, 2, 3, 2, 3, 3, 4, 
@@ -96,7 +96,7 @@ extern const int mask_nch_tbl[64] =
   3, 4, 4, 5, 4, 5, 5, 6 
 };
 
-extern const int mask_order_tbl[64][6] =
+extern const short int mask_order_tbl[64][6] =
 {
 { CH_NONE },
 { CH_L },

@@ -21,7 +21,7 @@ void outPlugin::About(HWND hwndParent)
 int outPlugin::Open(Speakers spk, const int bufferlenms, const int prebufferms)
 {
 	return (g_pModSlave && g_pModSlave->Open ? g_pModSlave->Open(spk.sample_rate,
-				     spk2nch(spk), spk2bps(spk), bufferlenms, prebufferms) : -1);
+			  spk2nch(spk), spk2bps(spk.format), bufferlenms, prebufferms) : -1);
 }
 
 void outPlugin::Close(void)

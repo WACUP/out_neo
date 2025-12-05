@@ -144,12 +144,34 @@ bool DevilConfig::Write( const TCHAR * szKey, const double fValue )
 	return ( bool )WritePrivateProfileString( szSection, szKey, szText, szIniPath );
 }
 
+bool DevilConfig::Write( const TCHAR * szKey, const double fValue, const int fDefaultValue )
+{
+	TCHAR szText[ 50 ] = TEXT( "" );
+	const bool is_default = (fValue == fDefaultValue);
+	if (!is_default)
+	{
+		_stprintf_s(szText, ARRAYSIZE(szText), TEXT("%.16f"), fValue);
+	}
+	return ( bool )WritePrivateProfileString( szSection, szKey, (!is_default ? szText : NULL), szIniPath );
+}
+
 // *****************************************************************************
 bool DevilConfig::Write( const TCHAR * szKey, const int iValue )
 {
 	TCHAR szNumber[ 12 ] = TEXT( "" );
 	_stprintf_s( szNumber, ARRAYSIZE( szNumber ), TEXT( "%i" ), iValue );
 	return ( bool )WritePrivateProfileString( szSection, szKey, szNumber, szIniPath );
+}
+
+bool DevilConfig::Write( const TCHAR * szKey, const int iValue, const int iDefaultValue )
+{
+	TCHAR szNumber[ 12 ] = TEXT( "" );
+	const bool is_default = (iValue == iDefaultValue);
+	if (!is_default)
+	{
+		_stprintf_s(szNumber, ARRAYSIZE(szNumber), TEXT("%i"), iValue);
+	}
+	return ( bool )WritePrivateProfileString( szSection, szKey, (!is_default ? szNumber : NULL), szIniPath );
 }
 
 // *****************************************************************************

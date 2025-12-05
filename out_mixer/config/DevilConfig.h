@@ -42,7 +42,9 @@ public:
 	~DevilConfig();
 
 	bool Write( const TCHAR * szKey, const double fValue );
+	bool Write( const TCHAR * szKey, const double fValue, const int fDefaultValue );
 	bool Write( const TCHAR * szKey, const int iValue );
+	bool Write( const TCHAR * szKey, const int iValue, const int iDefaultValue );
 	bool Write( const TCHAR * szKey, const TCHAR * szText );
 
 	bool Read( const TCHAR * szKey, double * fOut, const double fDefault );

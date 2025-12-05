@@ -283,7 +283,7 @@ BOOL TabDlg::message(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 				const int page = TabCtrl_GetCurSel(tab_ctl);
 				switch_to(page);
-				g_pMixer->m_pConfig->Write(TEXT("iLastPrefs"), page);
+				g_pMixer->m_pConfig->Write(TEXT("iLastPrefs"), page, 0);
 				break;
 			}
 			break;

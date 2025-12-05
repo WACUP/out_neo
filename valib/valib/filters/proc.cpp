@@ -120,7 +120,7 @@ AudioProcessor::dithering_level() const
 }
 
 
-bool 
+bool __declspec(noinline)
 AudioProcessor::rebuild_chain()
 {
   chain.drop();

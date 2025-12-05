@@ -25,6 +25,7 @@ outMixer::outMixer(void)
 #else
 	m_pOut = (IOut*)m_pOutPlugin;
 #endif
+	m_outputchanged = true;
 }
 
 outMixer::~outMixer(void)
@@ -61,12 +62,16 @@ void outMixer::ReadConfig(void)
 	matrix_t matrix;
 
 	// Output
-	m_pConfig->Read(TEXT("iOutputMode"), &m_out_spk.mask, MODE_2_0);
+	m_pConfig->Read(TEXT("iOutputMode"), &m_out_spk.mask, MODE_UNDEFINED);
 	m_output_as_is = (m_out_spk.mask == MODE_UNDEFINED);
 
 	m_pConfig->Read(TEXT("iOutputRelation"), &m_out_spk.relation, NO_RELATION);
-	m_pConfig->Read(TEXT("iOutputFormat"), &m_out_spk.format, FORMAT_PCM16);
-	m_pConfig->Read(TEXT("iOutputRate"), &m_out_spk.sample_rate, 44100);
+
+	m_pConfig->Read(TEXT("iOutputFormat"), &m_out_spk.format, 0);
+	m_user_format = m_out_spk.format;
+	m_format_as_is = (m_user_format <= 0);
+
+	m_pConfig->Read(TEXT("iOutputRate"), &m_out_spk.sample_rate, 0);
 #ifdef USE_SPDIF
 	m_pConfig->Read(TEXT("bUseSpdif"), &iRes, 0);
 	m_use_spdif = (iRes==1);
@@ -301,29 +306,31 @@ void outMixer::WriteConfig(void)
 	m_dvd_graph.proc.get_matrix(matrix);
 
 	// Output
-	m_pConfig->Write(TEXT("iOutputMode"), m_out_spk.mask);
-	m_pConfig->Write(TEXT("iOutputRelation"), m_out_spk.relation);
-	m_pConfig->Write(TEXT("iOutputFormat"), m_out_spk.format);
-	m_pConfig->Write(TEXT("iOutputRate"), m_user_sample_rate);
+	m_pConfig->Write(TEXT("iOutputMode"), (!m_output_as_is ? m_out_spk.mask : MODE_UNDEFINED), MODE_UNDEFINED);
+	m_pConfig->Write(TEXT("iOutputRelation"), m_out_spk.relation, NO_RELATION);
+
+	m_pConfig->Write(TEXT("iOutputFormat"), m_user_format, 0);
+	m_pConfig->Write(TEXT("iOutputRate"), m_user_sample_rate, 0);
+
 #ifdef USE_SPDIF
 	m_pConfig->Write(TEXT("bUseSpdif"), m_use_spdif);
 #endif
 
 	// Interface
-	m_pConfig->Write(TEXT("bInvertLevels"), (int)m_invert_levels);
+	m_pConfig->Write(TEXT("bInvertLevels"), (int)m_invert_levels, 0);
 #ifdef LEGACY_CODE
 	m_pConfig->Write(TEXT("iRefreshTime"), m_refresh_time);
 #endif
 
 	// AGC options
-	m_pConfig->Write(TEXT("bAutoGain"), (int)m_dvd_graph.proc.get_auto_gain());
-	m_pConfig->Write(TEXT("bNormalize"), m_dvd_graph.proc.get_normalize());
+	m_pConfig->Write(TEXT("bAutoGain"), (int)m_dvd_graph.proc.get_auto_gain(), 1);
+	m_pConfig->Write(TEXT("bNormalize"), m_dvd_graph.proc.get_normalize(), 0);
 	m_pConfig->Write(TEXT("dAttack"), m_dvd_graph.proc.get_attack());
 	m_pConfig->Write(TEXT("dRelease"), m_dvd_graph.proc.get_release());
 
 	// DRC
-	m_pConfig->Write(TEXT("bDRC"), (int)m_dvd_graph.proc.get_drc());
-	m_pConfig->Write(TEXT("dDRCPower"), m_dvd_graph.proc.get_drc_power());
+	m_pConfig->Write(TEXT("bDRC"), (int)m_dvd_graph.proc.get_drc(), 0);
+	m_pConfig->Write(TEXT("dDRCPower"), m_dvd_graph.proc.get_drc_power(), 0);
 
 	// Gain
 	m_pConfig->Write(TEXT("dGainMaster"), m_dvd_graph.proc.get_master());
@@ -346,24 +353,24 @@ void outMixer::WriteConfig(void)
 	m_pConfig->Write(TEXT("dGainOutputLFE"), output_gains[CH_LFE]);
 
 	// Delay
-	m_pConfig->Write(TEXT("bDelay"), (int)m_dvd_graph.proc.get_delay());
+	m_pConfig->Write(TEXT("bDelay"), (int)m_dvd_graph.proc.get_delay(), 0);
 	m_pConfig->Write(TEXT("dDelayL"), delays[CH_L]);
 	m_pConfig->Write(TEXT("dDelayC"), delays[CH_C]);
 	m_pConfig->Write(TEXT("dDelayR"), delays[CH_R]);
 	m_pConfig->Write(TEXT("dDelaySL"), delays[CH_SL]);
 	m_pConfig->Write(TEXT("dDelaySR"), delays[CH_SR]);
 	m_pConfig->Write(TEXT("dDelayLFE"), delays[CH_LFE]);
-	m_pConfig->Write(TEXT("iDelayUnits"), m_dvd_graph.proc.get_delay_units());
+	m_pConfig->Write(TEXT("iDelayUnits"), m_dvd_graph.proc.get_delay_units(), 0);
 
 	// Matrix options
-	m_pConfig->Write(TEXT("bAutoMatrix"), (int)m_dvd_graph.proc.get_auto_matrix());
-	m_pConfig->Write(TEXT("bNormalizeMatrix"), (int)m_dvd_graph.proc.get_normalize_matrix());
-	m_pConfig->Write(TEXT("bVoiceControl"), (int)m_dvd_graph.proc.get_voice_control());
-	m_pConfig->Write(TEXT("bExpandStereo"), (int)m_dvd_graph.proc.get_expand_stereo());
+	m_pConfig->Write(TEXT("bAutoMatrix"), (int)m_dvd_graph.proc.get_auto_matrix(), 1);
+	m_pConfig->Write(TEXT("bNormalizeMatrix"), (int)m_dvd_graph.proc.get_normalize_matrix(), 1);
+	m_pConfig->Write(TEXT("bVoiceControl"), (int)m_dvd_graph.proc.get_voice_control(), 1);
+	m_pConfig->Write(TEXT("bExpandStereo"), (int)m_dvd_graph.proc.get_expand_stereo(), 1);
 
 	// Bass redirection
-	m_pConfig->Write(TEXT("bBassRedirection"), (int)m_dvd_graph.proc.get_bass_redir());
-	m_pConfig->Write(TEXT("iBassFrequency"), m_dvd_graph.proc.get_bass_freq());
+	m_pConfig->Write(TEXT("bBassRedirection"), (int)m_dvd_graph.proc.get_bass_redir(), 0);
+	m_pConfig->Write(TEXT("iBassFrequency"), m_dvd_graph.proc.get_bass_freq(), 0);
 
 	// Matrix
 	m_pConfig->Write(TEXT("dMatrix_L_L"), matrix[0][0]);
@@ -486,7 +493,7 @@ int outMixer::Open(int samplerate, int numchannels, int bitspersamp, int bufferl
 	}
 
 	// init
-	m_outputchanged = false;
+	//m_outputchanged = false;
 #ifdef USE_SPDIF
 	int out_format = m_dvd_graph.get_output().format;
 	if (m_use_spdif && (out_format == FORMAT_SPDIF || out_format == FORMAT_UNKNOWN))
@@ -502,7 +509,7 @@ int outMixer::Open(int samplerate, int numchannels, int bitspersamp, int bufferl
 	}
 
 	const int last_numchannels = m_out_spk.nch(),
-			  last_bitspersample = spk2bps(m_out_spk),
+			  last_bitspersample = spk2bps(m_out_spk.format),
 			  last_sample_rate = m_out_spk.sample_rate;
 
 	// Réglages input/output
@@ -511,16 +518,21 @@ int outMixer::Open(int samplerate, int numchannels, int bitspersamp, int bufferl
 	// if the settings are on as-is for the channel count then we need
 	// to re-initialise things when it changes to avoid playback issue
 	// as well as if the bps of the input has changed vs the output
-	const bool changed_bps = (last_bitspersample != bitspersamp);
-	if (m_output_as_is && ((last_numchannels != m_out_spk.nch()) || (last_numchannels != numchannels)) ||
-					 changed_bps || (!m_user_sample_rate && (last_sample_rate != m_out_spk.sample_rate)))
+	const bool changed_bps = (/*!m_user_format || */(last_bitspersample != bitspersamp));
+	if (m_outputchanged || m_output_as_is && ((last_numchannels != m_out_spk.nch()) ||
+		(last_numchannels != numchannels)) || changed_bps || (!m_user_sample_rate &&
+		(last_sample_rate != m_out_spk.sample_rate)))
 	{
-		g_pMixer->ChangeOutput((m_output_as_is ? 0 : spk2nch(m_out_spk)), (changed_bps
-							   ? m_out_spk.format : -1), m_in_spk.sample_rate, false);
+		g_pMixer->ChangeOutput((m_output_as_is ? 0 : spk2nch(m_out_spk)), (changed_bps ?
+							  spk2bps(m_format_as_is ? m_in_spk.format : m_user_format) :
+													   -1), m_in_spk.sample_rate, false);
 	}
 
 	if (m_user_sample_rate == 0)
 		m_out_spk.sample_rate = samplerate;
+
+	if (m_format_as_is || !m_out_spk.format)
+		m_out_spk.format = m_in_spk.format;
 
 	if (m_out_spk.original_mask == 0)
 		m_out_spk.original_mask = m_in_spk.original_mask;
@@ -567,7 +579,7 @@ int outMixer::Write(const char *buf, const int len)
 		const int written = this->GetOutputTime();
 		this->Flush(0);
 		this->Close();
-		this->Open(m_in_spk.sample_rate, spk2nch(m_in_spk), spk2bps(m_in_spk), 0, 0);
+		this->Open(m_in_spk.sample_rate, spk2nch(m_in_spk), spk2bps(m_in_spk.format), 0, 0);
 		this->Flush(written);
 		m_outputchanged = false;
 	}
@@ -657,7 +669,6 @@ void outMixer::ChangeOutput(const int ispk, const int ifmt, const int rate, cons
 void outMixer::ChangeOutput(const int ispk, const int ifmt, const int rate, const bool update_as_is)
 #endif
 {
-	short int format = FORMAT_PCM16;
 	int mask = MODE_STEREO;
 	short int relation = NO_RELATION;
 
@@ -668,7 +679,6 @@ void outMixer::ChangeOutput(const int ispk, const int ifmt, const int rate, cons
 
 	switch (ispk)
 	{
-		case 0: mask = m_in_spk.mask; break;
 		case 1: mask = MODE_1_0; break;
 		case 2: mask = MODE_2_0; break;
 		case 3: mask = MODE_3_0; break;
@@ -677,18 +687,24 @@ void outMixer::ChangeOutput(const int ispk, const int ifmt, const int rate, cons
 		case 6: mask = MODE_3_2 | CH_MASK_LFE; break;
 		case 7: mask = MODE_STEREO; relation = RELATION_DOLBY; break;
 		case 8: mask = MODE_STEREO; relation = RELATION_DOLBY2; break;
+		default: mask = m_in_spk.mask; break;
 	}
 
 	switch (ifmt)
 	{
-		case 0: format = FORMAT_PCM16; break;
-		case 1: format = FORMAT_PCM24; break;
-		case 2: format = FORMAT_PCM32; break;
+		case 1: case 16: m_user_format = FORMAT_PCM16; break;
+		case 2: case 24: m_user_format = FORMAT_PCM24; break;
+		case 3: case 32: m_user_format = FORMAT_PCM32; break;
+		case 0: /*default:*/ m_user_format = 0; break;
+	}
+
+	if (update_as_is)
+	{
+		m_format_as_is = !m_user_format;
 	}
 
 	switch (rate)
 	{
-		case 0: m_user_sample_rate = 0; break;
 		case 1: m_user_sample_rate = 8000; break;
 		case 2: m_user_sample_rate = 11025; break;
 		case 3: m_user_sample_rate = 22050; break;
@@ -696,12 +712,14 @@ void outMixer::ChangeOutput(const int ispk, const int ifmt, const int rate, cons
 		case 5: m_user_sample_rate = 32000; break;
 		case 6: m_user_sample_rate = 44100; break;
 		case 7: m_user_sample_rate = 48000; break;
-		case 8: m_user_sample_rate = 96000; break;
-		case 9: m_user_sample_rate = 192000; break;
+		case 8: m_user_sample_rate = 88200; break;
+		case 9: m_user_sample_rate = 96000; break;
+		case 10: m_user_sample_rate = 192000; break;
+		case 0: m_user_sample_rate = 0; break;
 	}
 
-	m_out_spk = Speakers(format, ispk ? mask : 0, m_user_sample_rate ?
-						 m_user_sample_rate : m_in_spk.sample_rate, -1, relation);
+	m_out_spk = Speakers(m_user_format ? m_user_format : m_in_spk.format, ispk ? mask : 0,
+						 m_user_sample_rate ? m_user_sample_rate : m_in_spk.sample_rate, -1, relation);
 	m_outputchanged = true;
 #ifdef USE_SPDIF
 	m_use_spdif = use_spdif;

@@ -199,7 +199,7 @@ Levels::on_process()
 
   int nch = spk.nch();
   sample_t spk_level = 1.0 / spk.level;
-  const int *spk_order = spk.order();
+  const short int *spk_order = spk.order();
 
   while (n)
   {

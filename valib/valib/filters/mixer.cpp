@@ -68,8 +68,8 @@ Mixer::prepare_matrix()
   // todo: do not touch pass-through channels
   // todo: gain channel if possible instead of matrixing
 
-  const int *in_order = spk.order();
-  const int *out_order = out_spk.order();
+  const short int *in_order = spk.order();
+  const short int *out_order = out_spk.order();
   sample_t factor = 1.0;
 
   if (spk.level > 0.0)

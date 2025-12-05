@@ -70,7 +70,7 @@ Delay::init(Speakers _spk)
 {
   int ch;
   const int nch = _spk.nch();
-  const int *order = _spk.order();
+  const short int *order = _spk.order();
   const double factor = units2samples(units);
 
   memset(ch_delays, 0, sizeof(ch_delays));
