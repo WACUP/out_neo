@@ -398,7 +398,7 @@ void ConfigDlg::init_plugin_list()
 			if (IsValidPluginFile(File->cFileName))
 			{
 				if (pszMasterName && !SameStr(pszMasterName, File->cFileName) &&
-					!IsDllBlocked(File->cFileName) && CanLoadPlugin(File->cFileName, TRUE))
+					!IsDllBlocked(File->cFileName) && CanLoadPlugin(File->cFileName, -1, TRUE))
 				{
 					Out_Module* out_plugin = get_out_plugin(File->cFileName);
 
@@ -800,18 +800,48 @@ void ConfigDlg::update_dynamic_controls()
 {
 	if ((in_spk != old_in_spk) || m_refresh)
 	{
-		TCHAR buf[128]/* = { 0 }*/;
-		old_in_spk = in_spk;
-		PrintfCch(buf, ARRAYSIZE(buf),
+		if (in_spk.sample_rate > 0)
+		{
+			TCHAR buf[128]/* = { 0 }*/;
+			old_in_spk = in_spk;
+			PrintfCch(buf, ARRAYSIZE(buf),
 #ifdef _UNICODE
-				  TEXT("Output format    (Current input format: %hs %hs @ %iHz)"),
+					  TEXT("Output format    (Current input format: %hs %hs @ %iHz)"),
 #else
-				  TEXT("Output format    (Current input format: %s %s @ %iHz)"),
+					  TEXT("Output format    (Current input format: %s %s @ %iHz)"),
 #endif
-				  in_spk.format_text(),
-				  in_spk.mode_text(),
-				  in_spk.sample_rate);
-		SetDlgItemText(hwnd, IDC_GRP_OUTPUT, buf);
+					  in_spk.format_text(),
+					  in_spk.mode_text(),
+					  in_spk.sample_rate);
+			SetDlgItemText(hwnd, IDC_GRP_OUTPUT, buf);
+		}
+		else
+		{
+			SetDlgItemText(hwnd, IDC_GRP_OUTPUT, TEXT("Output format    (Not playing or not set as the active output plug-in)"));
+
+			// just make sure that we're not showing junk
+			memset(input_levels, 0, sizeof(input_levels));
+			memset(output_levels, 0, sizeof(output_levels));
+
+			old_in_spk.set_unknown();
+
+			m_proc->reset();
+
+			for (int ch = 0; ch < NCHANNELS; ch++)
+			{
+				if (invert_levels)
+				{
+					PostDlgItemMessage(hwnd, idc_level_in[ch], PBM_SETPOS, input_levels[ch] > 0 ? long(-value2db(input_levels[ch]) * ticks) : long(-min_level * ticks), 0);
+					PostDlgItemMessage(hwnd, idc_level_out[ch], PBM_SETPOS, output_levels[ch] > 0 ? long(-value2db(output_levels[ch]) * ticks) : long(-min_level * ticks), 0);
+				}
+				else
+				{
+					PostDlgItemMessage(hwnd, idc_level_in[ch], PBM_SETPOS, input_levels[ch] > 0 ? long((value2db(input_levels[ch]) - min_level) * ticks) : 0, 0);
+					PostDlgItemMessage(hwnd, idc_level_out[ch], PBM_SETPOS, output_levels[ch] > 0 ? long((value2db(output_levels[ch]) - min_level) * ticks) : 0, 0);
+				}
+				PostDlgItemMessage(hwnd, idc_level_out[ch], PBM_SETBARCOLOR, 0, (output_levels[ch] > 0.99) ? RGB(255, 0, 0) : RGB(0, 128, 0));
+			}
+		}
 	}
 
 	/////////////////////////////////////

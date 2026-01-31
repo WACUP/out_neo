@@ -383,6 +383,13 @@ extern "C" __declspec(dllexport) void __cdecl winampGetOutModeChange(const int m
 		{
 			// we've been unloaded so we can 
 			// reset everything just in-case
+			// avoids the prefs showing in a
+			// weird state when not actively
+			// used after changing plug-in
+			if (g_pMixer)
+			{
+				g_pMixer->UnSet();
+			}
 			break;
 		}
 		case OUT_SET:

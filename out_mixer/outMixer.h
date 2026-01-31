@@ -76,6 +76,7 @@ public:
 	virtual void Flush(const int t);
 	virtual int GetOutputTime(void);
 	virtual int GetWrittenTime(void);
+	virtual void UnSet(void);
 
 	//Config dialog access
 	inline DVDGraph *get_DvdGraph() { return &m_dvd_graph; }
