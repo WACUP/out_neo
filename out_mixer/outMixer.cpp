@@ -468,7 +468,7 @@ int outMixer::Open(int samplerate, int numchannels, int bitspersamp, int bufferl
 	{
 		if (GetModuleFileName(g_pModSlave->hDllInstance, szFullpath, MAX_PATH - 6 - 1))
 		{
-			pszFullpath = (LPWSTR)FindPathFileName(szFullpath);
+			pszFullpath = (LPWSTR)FindPathFileName(szFullpath, nullptr);
 		}
 		else
 		{

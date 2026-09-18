@@ -1,12 +1,11 @@
 #pragma once
 #include <windows.h>
-#include <strsafe.h>
 #include <shlwapi.h>
 #include <math.h>
 #include "spk.h"
 #include <winamp/out.h>
 
-#define PLUGIN_VERSION L"1.1.7"
+#define PLUGIN_VERSION L"1.1.8"
 #define PLUGIN_NAME TEXT("Not So Neo v") PLUGIN_VERSION
 #define PLUGIN_ID 424242
 

@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <loader/loader/paths.h>
 #include <loader/loader/utils.h>
-#include <nu/autowide.h>
 #include "config.h"
 
 extern Out_Module * g_pModSlave;
@@ -355,7 +354,7 @@ void ConfigDlg::init_plugin_list()
 	// get master plugin file name
 	if (GetModuleFileName(g_OutModMaster.hDllInstance, szMasterName, MAX_PATH - 6 - 1))
 	{
-		pszMasterName = (LPWSTR)FindPathFileName(szMasterName);
+		pszMasterName = (LPWSTR)FindPathFileName(szMasterName, nullptr);
 	}
 	else
 	{
@@ -373,7 +372,7 @@ void ConfigDlg::init_plugin_list()
 		{
 			if (GetModuleFileName(g_pModSlave->hDllInstance, szSlaveName, MAX_PATH - 6 - 1))
 			{
-				pszSlaveName = (LPWSTR)FindPathFileName(szSlaveName);
+				pszSlaveName = (LPWSTR)FindPathFileName(szSlaveName, nullptr);
 			}
 			else
 			{

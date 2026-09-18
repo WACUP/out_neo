@@ -18,7 +18,6 @@ static const GUID OutNotSoNeoLangGUID =
 
 // wasabi based services for localisation support
 api_service* WASABI_API_SVC = 0;
-api_application* WASABI_API_APP = 0;
 
 SETUP_API_LNG_VARS;
 
@@ -355,7 +354,7 @@ extern "C" __declspec(dllexport) BOOL __cdecl winampGetOutPrefs(prefsDlgRecW* pr
 			StartPluginLangOnly(g_OutModMaster.hDllInstance, OutNotSoNeoLangGUID);
 
 			// TODO localise
-			prefs->hInst = GetModuleHandle(GetPaths()->wacup_core_dll)/*WASABI_API_LNG_HINST*/;
+			prefs->hInst = GetCoreDll()/*WASABI_API_LNG_HINST*/;
 			prefs->dlgID = IDD_TABBED_PREFS_DIALOG;// IDD_CONFIG;
 			prefs->name = LngStringDup(IDS_PREFS_NAME);
 			prefs->proc = MixerConfigProc;
@@ -427,7 +426,7 @@ extern "C" __declspec(dllexport) void __cdecl winampGetOutModeChange(const int m
 				if (out_plugin && (g_OutModMaster.hDllInstance != out_plugin->hDllInstance))
 				{
 					GetModuleFileName(out_plugin->hDllInstance, szPluginName, ARRAYSIZE(szPluginName));
-					pszfilename = (LPWSTR)FindPathFileName(szPluginName);
+					pszfilename = (LPWSTR)FindPathFileName(szPluginName, nullptr);
 				}
 
 				// Load slave dll but check if it's already
