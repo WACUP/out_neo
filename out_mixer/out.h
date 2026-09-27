@@ -5,7 +5,7 @@
 #include "spk.h"
 #include <winamp/out.h>
 
-#define PLUGIN_VERSION L"1.1.8"
+#define PLUGIN_VERSION L"1.1.9"
 #define PLUGIN_NAME TEXT("Not So Neo v") PLUGIN_VERSION
 #define PLUGIN_ID 424242
 

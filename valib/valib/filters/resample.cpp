@@ -513,11 +513,11 @@ Resample::reset_resample()
     pos1 = c1x;
     shift = c2 - pre_samples*m2;
 
-    for (ch = 0; ch < nch; ch++)
-      memset(buf1[ch], 0, pos1 * sizeof(sample_t));
+    for (ch = 0; (ch < nch) && (ch < NCHANNELS); ch++)
+      if (buf1[ch]) memset(buf1[ch], 0, pos1 * sizeof(sample_t));
 
-    for (ch = 0; ch < nch; ch++)
-      memset(delay2[ch], 0, (n2/m2+1) * sizeof(sample_t));
+    for (ch = 0; (ch < nch) && (ch < NCHANNELS); ch++)
+      if (delay2[ch]) memset(delay2[ch], 0, (n2/m2+1) * sizeof(sample_t));
   }
 }
 
