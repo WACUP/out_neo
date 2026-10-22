@@ -33,7 +33,11 @@ private:
 	Speakers m_out_spk;
 
 	//unused
+#ifndef _WIN64
 	virtual int Open(Speakers spk, const int bufferlenms, const int prebufferms) { return 0; }
+#else
+	virtual int Open(Speakers spk) { return 0; }
+#endif
 
 	//config
 	TCHAR m_out_plugin[32];
@@ -64,8 +68,7 @@ public:
 #endif
 
 	virtual void Config(HWND hwndParent);
-	virtual int Open(const int samplerate, const int numchannels, const int bitspersamp,
-										   const int bufferlenms, const int prebufferms);
+	virtual int Open(OUT_OPEN_PARAM);
 	virtual void Close(void);
 	virtual int Write(const char *buf, const int len);
 	virtual int CanWrite(void);

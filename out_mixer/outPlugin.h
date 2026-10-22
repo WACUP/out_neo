@@ -9,7 +9,11 @@ public:
 
 	virtual void Config(HWND hwndParent);
 	virtual void About(HWND hwndParent);
+#ifndef _WIN64
 	virtual int Open(Speakers spk, const int bufferlenms, const int prebufferms);
+#else
+	virtual int Open(Speakers spk);
+#endif
 	virtual void Close(void);
 	virtual int Write(const char *buf, const int len);
 	virtual int CanWrite(void);

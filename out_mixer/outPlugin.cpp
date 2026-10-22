@@ -18,11 +18,19 @@ void outPlugin::About(HWND hwndParent)
 	}
 }
 
+#ifndef _WIN64
 int outPlugin::Open(Speakers spk, const int bufferlenms, const int prebufferms)
 {
 	return (g_pModSlave && g_pModSlave->Open ? g_pModSlave->Open(spk.sample_rate,
 			  spk2nch(spk), spk2bps(spk.format), bufferlenms, prebufferms) : -1);
 }
+#else
+int outPlugin::Open(Speakers spk)
+{
+	return (g_pModSlave && g_pModSlave->Open ? g_pModSlave->Open(spk.sample_rate,
+										spk2nch(spk), spk2bps(spk.format)) : -1);
+}
+#endif
 
 void outPlugin::Close(void)
 {

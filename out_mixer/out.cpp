@@ -35,7 +35,7 @@ void Config( HWND p );
 void About( HWND p );
 void Init( void );
 void Quit( void );
-int Open( const int sr, const int nch, const int bps, const int len_ms, const int pre_len_ms );
+int Open(OUT_OPEN_PARAM);
 void Close( void );
 int	Write(const char * data, const int size );
 int CanWrite( void );
@@ -60,7 +60,7 @@ Out_Module g_OutModMaster = {
 	About,				// void ( * About )( HWND hwndParent )
 	Init,				// void ( * Init )()
 	Quit,				// void ( * Quit )()
-	Open,				// int ( *Open )( int samplerate, int numchannels, int bitspersamp, int bufferlenms, int prebufferms )
+	Open,				// int ( *Open )( OUT_OPEN_PARAM )
 	Close,				// void ( * Close )()
 	Write,				// int ( * Write )( char * buf, int len )
 	CanWrite,			// int ( * CanWrite )()
@@ -155,9 +155,13 @@ void About( HWND p )
 	DecompressResourceFree(output);
 }
 
-int Open( const int sr, const int nch, const int bps, const int len_ms, const int pre_len_ms )
+int Open(OUT_OPEN_PARAM)
 {
-	return (g_pMixer ? g_pMixer->Open( sr, nch, bps, len_ms, pre_len_ms ) : -1);
+#ifndef _WIN64
+	return (g_pMixer ? g_pMixer->Open(samplerate, numchannels, bitspersamp, bufferlenms, prebufferms) : -1);
+#else
+	return (g_pMixer ? g_pMixer->Open(samplerate, numchannels, bitspersamp) : -1);
+#endif
 }
 
 void Close( void )

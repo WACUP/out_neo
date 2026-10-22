@@ -460,7 +460,7 @@ void outMixer::Config(HWND hwndParent)
 ////////////////////////////////////////////////////////////////////////////////
 //  Open
 ////////////////////////////////////////////////////////////////////////////////
-int outMixer::Open(int samplerate, int numchannels, int bitspersamp, int bufferlenms, int prebufferms)
+int outMixer::Open(OUT_OPEN_PARAM)
 {
 	// Récupération du chemin complet du plugin actuel
 	TCHAR szFullpath[MAX_PATH]/* = { 0 }*/, *pszFullpath;
@@ -547,7 +547,11 @@ int outMixer::Open(int samplerate, int numchannels, int bitspersamp, int bufferl
 	m_dvd_graph.set_use_spdif(m_use_spdif);
 #endif
 
+#ifndef _WIN64
 	return (m_pOut ? m_pOut->Open(m_out_spk, bufferlenms, prebufferms) : -1);
+#else
+	return (m_pOut ? m_pOut->Open(m_out_spk) : -1);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -579,7 +583,11 @@ int outMixer::Write(const char *buf, const int len)
 		const int written = this->GetOutputTime();
 		this->Flush(0);
 		this->Close();
+#ifndef _WIN64
 		this->Open(m_in_spk.sample_rate, spk2nch(m_in_spk), spk2bps(m_in_spk.format), 0, 0);
+#else
+		this->Open(m_in_spk.sample_rate, spk2nch(m_in_spk), spk2bps(m_in_spk.format));
+#endif
 		this->Flush(written);
 		m_outputchanged = false;
 	}

@@ -5,7 +5,7 @@
 #include "spk.h"
 #include <winamp/out.h>
 
-#define PLUGIN_VERSION L"1.1.9"
+#define PLUGIN_VERSION L"1.2"
 #define PLUGIN_NAME TEXT("Not So Neo v") PLUGIN_VERSION
 #define PLUGIN_ID 424242
 
@@ -17,8 +17,12 @@ class IOut
 {
 public:
 	virtual void Config(HWND hwndParent) = 0;
-	//virtual int  Open(int samplerate, int numchannels, int bitspersamp, int bufferlenms, int prebufferms) = 0;
+	//virtual int  Open(OUT_OPEN_PARAM) = 0;
+#ifndef _WIN64
 	virtual int  Open(Speakers spk, const int bufferlenms, const int prebufferms) = 0;
+#else
+	virtual int  Open(Speakers spk) = 0;
+#endif
 	virtual void Close(void) = 0;
 	virtual int  Write(const char *buf, const int len) = 0;
 	virtual int  CanWrite(void) = 0;
